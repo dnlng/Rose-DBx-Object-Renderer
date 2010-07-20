@@ -1,5 +1,9 @@
 Revision history for Rose-DBx-Object-Renderer
 
+0.74    19/07/2010
+        Fixed a bug in render_as_table() when including non-character based columns from sqlite in keyword searches.
+        Updated the column definitions for 'date', 'datetime' to allow editing and searching in YYYY-MM-DD.
+        Minor UI updates to render_as_table() and to the default 'table.tt'.
 0.73    13/07/2010
         Fixed a bug introduced in 0.71 where rendering methods failed to use custom stringify_me() methods (Reported by Gary Ashton-Jones).
         Minor code refactoring.

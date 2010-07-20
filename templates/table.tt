@@ -2,7 +2,7 @@
 
 [% BLOCK table %]
 	<div>
-		[% IF searchable %]<div class="block"><form action="[% url %]" method="get" id="[% table_id %]_search_form"><label for="[% table_id %]_search">Search </label><input type="text" name="[% param_list.q %]" id="[% table_id %]_search" value ="[% q %]"/>[% query_hidden_fields %]</form></div>[% END %]
+		[% IF searchable %]<div class="block"><form action="[% url %]" method="get" id="[% table_id %]_search_form"><input type="text" name="[% param_list.q %]" id="[% table_id %]_search" value ="[% q %]" placeholder="Search"/>[% query_hidden_fields %]</form></div>[% END %]
 		<h1>[% title %]</h1>
 		[% IF description %]<p>[% description %]</p>[% END %]
 		[% IF table.exists('create') %]<div class="block"><div><a href="[% table.create.link %]" class="button">[% table.create.value %]</a></div></div>[% END %]

@@ -21,8 +21,8 @@ use File::Spec;
 use Digest::MD5 ();
 use Scalar::Util ();
 
-our $VERSION = 0.73;
-# 210.57
+our $VERSION = 0.74;
+# 215.57
 
 sub _config {
 	my $config = {
@@ -39,8 +39,8 @@ sub _config {
 			'text' => {type => 'textarea', cols => '55', rows => '10'},
 			'postcode' => {sortopts => 'NUM', validate => '/^\d{3,4}$/', maxlength => 4},
 			'address' => {format => {for_view => sub {_view_address(@_);}}},
-			'date' => {validate => '/^(0?[1-9]|[1-2][0-9]|3[0-1])\/(0?[1-9]|1[0-2])\/[0-9]{4}$/', format => {for_edit => sub {_edit_date(@_);}, for_update => sub {_update_date(@_);}, for_search => sub {_search_date(@_);}, for_filter => sub {_search_date(@_);}, for_view => sub{_view_date(@_);}}},
-			'datetime' => {validate => '/^(0?[1-9]|[1-2][0-9]|3[0-1])\/(0?[1-9]|1[0-2])\/[0-9]{4}\s+[0-9]{1,2}:[0-9]{2}$/', format => {for_edit => sub{_edit_datetime(@_);}, for_view => sub{_view_datetime(@_);}, for_update => sub{_update_datetime(@_);}, for_search => sub {_search_date(@_);}, for_filter => sub {_search_date(@_);}}},
+			'date' => {validate => '/^(0?[1-9]|[1-2][0-9]|3[0-1])\/(0?[1-9]|1[0-2])\/[0-9]{4}|([0-9]{4}\-0?[1-9]|1[0-2])\-(0?[1-9]|[1-2][0-9]|3[0-1])$/', format => {for_edit => sub {_edit_date(@_);}, for_update => sub {_update_date(@_);}, for_search => sub {_search_date(@_);}, for_filter => sub {_search_date(@_);}, for_view => sub{_view_date(@_);}}},
+			'datetime' => {validate => '/^(0?[1-9]|[1-2][0-9]|3[0-1])\/(0?[1-9]|1[0-2])\/[0-9]{4}|([0-9]{4}\-0?[1-9]|1[0-2])\-(0?[1-9]|[1-2][0-9]|3[0-1])\s+[0-9]{1,2}:[0-9]{2}$/', format => {for_edit => sub{_edit_datetime(@_);}, for_view => sub{_view_datetime(@_);}, for_update => sub{_update_datetime(@_);}, for_search => sub {_search_date(@_);}, for_filter => sub {_search_date(@_);}}},
 			'timestamp' => {readonly => "readonly", disabled => 1, format => {for_view => sub {_view_timestamp(@_);}, for_create => sub {_create_timestamp(@_);}, for_edit => sub {_create_timestamp(@_);}, for_update => sub {_update_timestamp(@_);}, for_search => sub {_search_date(@_);}, for_filter => sub {_search_date(@_);}}},
 			'description' => {sortopts => 'LABELNAME', type => 'textarea', cols => '55', rows => '10'},
 			'time' => {validate => '/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/', maxlength => 5, format => {for_update => sub {_udpate_time(@_)}, for_edit => sub{_edit_time(@_);}, for_view => sub{_view_time(@_);}}},
@@ -53,7 +53,6 @@ sub _config {
 			'last_name' => {validate => 'LNAME', sortopts => 'LABELNAME', required => 1, stringify => 1},
 			'email' => {required => 1, validate => 'EMAIL', sortopts => 'LABELNAME', format => {for_view => sub {my ($self, $column) = @_;my $value = $self->$column;return unless $value;return qq(<a href="mailto:$value">$value</a>);}}},
 			'url' => {sortopts => 'LABELNAME', format => {for_view => sub {my ($self, $column) = @_;my $value = $self->$column;return unless $value;return qq(<a href="$value">$value</a>);}}},
-			'mobile' => {validate => '/^[\+\d\s\-\(\)]+$/'},
 			'phone' => {validate => '/^[\+\d\s\-\(\)]+$/'},
 			'username' => {validate => '/^[a-zA-Z0-9]{4,}$/', sortopts => 'LABELNAME', required => 1},
 			'password' => {validate => '/^[\w.!?@#$%&*]{5,}$/', type => 'password', format => {for_view => sub {return '****';}, for_edit => sub {return;}, for_update => sub {my ($self, $column, $value) = @_;return $self->$column(Digest::MD5::md5_hex($value)) if $value;}}, comment => 'Minimum 5 characters', unsortable => 1},
@@ -82,6 +81,7 @@ sub _config {
 	$config->{columns}->{'depth'} = $config->{columns}->{'length'};
 	$config->{columns}->{'title'} = $config->{columns}->{'name'};
 	$config->{columns}->{'birth'} = $config->{columns}->{'date'};
+	$config->{columns}->{'mobile'} = $config->{columns}->{'phone'};
 	$config->{columns}->{'fax'} = $config->{columns}->{'phone'};
 	$config->{columns}->{'cost'} = $config->{columns}->{'money'};
 	$config->{columns}->{'price'} = $config->{columns}->{'money'};
@@ -902,7 +902,7 @@ sub render_as_table {
 						$search_method = $search_column.'_for_search';
 						foreach my $q (@qs) {
 							my $search_result = $search_class->$search_method($q);
-							push @{$search_values}, '%' . $search_result . '%' if $search_result;
+							push @{$search_values}, '%' . $search_result . '%' if defined $search_result;
 						}
 					}
 					else {
@@ -911,6 +911,12 @@ sub render_as_table {
 
 					if ($search_class && $search_class->meta->db->driver eq 'pg' && exists $search_class->meta->{columns}->{$search_column} && ! $search_class->meta->{columns}->{$search_column}->isa('Rose::DB::Object::Metadata::Column::Character')) {
 						my $searchable_column_text = 'text(' . $table_alias->{$search_class} . '.' . $search_column . ') ' . $like_operator . ' ?';
+						foreach my $search_value (@{$search_values}) {
+							push @{$or}, [\$searchable_column_text => $search_value];
+						}
+					}
+					elsif ($search_class && $search_class->meta->db->driver eq 'sqlite' && exists $search_class->meta->{columns}->{$search_column} && ! $search_class->meta->{columns}->{$search_column}->isa('Rose::DB::Object::Metadata::Column::Character')) {
+						my $searchable_column_text = 'cast(' . $table_alias->{$search_class} . '.' . $search_column . ' AS TEXT) ' . $like_operator . ' ?';
 						foreach my $search_value (@{$search_values}) {
 							push @{$or}, [\$searchable_column_text => $search_value];
 						}
@@ -1283,7 +1289,7 @@ sub render_as_table {
 		else {
 			$args{description} = qq(<p>$args{description}</p>) if defined $args{description};
 			$html_table .= '<div>';
-			$html_table .= qq(<div class="block"><form action="$url" method="get" id="$table_id\_search_form"><label for="$table_id\_search">Search </label><input type="text" name="$param_list->{q}" id="$table_id\_search" value="$q"/>$query_hidden_fields</form></div>) if $args{searchable};
+			$html_table .= qq(<div class="block"><form action="$url" method="get" id="$table_id\_search_form"><input type="text" name="$param_list->{q}" id="$table_id\_search" value="$q" placeholder="Search"/>$query_hidden_fields</form></div>) if $args{searchable};
 			$html_table .= qq(<h1>$table_title</h1>$args{description});
 			$html_table .= qq(<div class="block"><div><a href="$table->{create}->{link}" class="button">$table->{create}->{value}</a></div></div>) if exists $table->{create};
 			$html_table .= qq(<table id="$table_id">);
@@ -2047,7 +2053,12 @@ sub _edit_time {
 sub _update_date {
 	my ($self, $column, $value) = @_;
 	return unless $value;
-	my ($d, $m, $y) = split '/', $value;
+	my ($d, $m, $y) = split /\/|\-/, $value;
+	if ($d =~ /^\d{4}$/) { 
+		my $temp_d = $d;
+		$d = $y;
+		$y = $temp_d;
+	}
 	my $dt;
 	eval {$dt = DateTime->new(year => $y, month => $m, day => $d, time_zone => _get_renderer_config($self)->{misc}->{time_zone})};
 	return if $@;
@@ -2115,7 +2126,13 @@ sub _update_datetime {
 	return $self->$column(undef) if $value eq '';
 	my ($date, $time) = split /\s+/, $value;
 
-	my ($d, $m, $y) = split '/', $date;
+	my ($d, $m, $y) = split /\/|\-/, $date;
+	if ($d =~ /^\d{4}$/) { 
+		my $temp_d = $d;
+		$d = $y;
+		$y = $temp_d;
+	}
+	
 	my ($hour, $minute) = split ':', $time;
 
 	my $dt;
