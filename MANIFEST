@@ -1,0 +1,13 @@
+Changes
+MANIFEST
+Makefile.PL
+META.yml
+README
+lib/Rose/DBx/Object/Renderer.pm
+t/00-load.t
+t/pod-coverage.t
+t/pod.t
+templates/form.tt
+templates/chart.tt
+templates/table.tt
+templates/menu.tt
