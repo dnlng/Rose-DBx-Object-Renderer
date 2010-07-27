@@ -2488,7 +2488,7 @@ Rose::DBx::Object::Renderer - Web UI Rendering for Rose::DB::Object
 
 =head1 DESCRIPTION
 
-Rose::DBx::Object::Renderer generates forms, tables, menus, and charts for L<Rose::DB::Object>. The generated UIs encapsulates sensible web conventions as default behaviours, such as rendering email addresses as 'mailto' links and enforce appropriate validation in forms. These default behaviours are highly configurable.
+Rose::DBx::Object::Renderer generates forms, tables, menus, and charts for L<Rose::DB::Object>. The generated UIs encapsulate sensible web conventions as default behaviours, such as rendering email addresses as 'mailto' links and enforce appropriate validation in forms. These default behaviours are highly configurable.
 
 Rose::DBx::Object::Renderer uses L<CGI::FormBuilder> to generate forms and the Google Chart API to render charts. L<Template::Toolkit> is used for template processing, although UIs can be generated out of the box without using templates.
 
