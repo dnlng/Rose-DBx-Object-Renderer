@@ -22,7 +22,7 @@ use Digest::MD5 ();
 use Scalar::Util ();
 
 our $VERSION = 0.74;
-# 215.57
+# 223.59
 
 sub _config {
 	my $config = {
@@ -58,13 +58,13 @@ sub _config {
 			'password' => {validate => '/^[\w.!?@#$%&*]{5,}$/', type => 'password', format => {for_view => sub {return '****';}, for_edit => sub {return;}, for_update => sub {my ($self, $column, $value) = @_;return $self->$column(Digest::MD5::md5_hex($value)) if $value;}}, comment => 'Minimum 5 characters', unsortable => 1},
 			'confirm_password' => {required => 1, type => 'password', validate => {javascript => "!= form.elements['password'].value"}},
 			'abn' => {label => 'ABN', validate => '/^(\d{2}\s*\d{3}\s*\d{3}\s*\d{3})$/', comment => 'e.g. 12 234 456 678'},
-			'money' => {validate => '/^\-?\d{1,11}(\.\d{2})?$/', sortopts => 'NUM', format => {for_view => sub {my ($self, $column) = @_;return unless $self->$column;return sprintf ('$%.02f', $self->$column);}, for_edit => sub {my ($self, $column) = @_;return unless $self->$column;return sprintf ('%.02f', $self->$column);}}},
+			'money' => {validate => '/^\-?\d{1,11}(\.\d{2})?$/', sortopts => 'NUM', format => {for_view => sub {my ($self, $column) = @_;return unless defined $self->$column;return sprintf ('$%.02f', $self->$column);}, for_edit => sub {my ($self, $column) = @_;return unless defined $self->$column;return sprintf ('%.02f', $self->$column);}}},
 			'percentage' => {validate => 'NUM', sortopts => 'NUM', comment => 'e.g.: 99.8', format => {for_view => sub {my ($self, $column, $value) = @_;$value = $self->$column;return unless $value;my $p = $value*100;return "$p%";}, for_edit => sub {my ($self, $column) = @_;my $value = $self->$column;return unless defined $value;return $value*100;}, for_update => sub {my ($self, $column, $value) = @_;return $self->$column($value/100) if $value;},  for_search => sub {_search_percentage(@_);}, for_filter => sub {_search_percentage(@_);}}},
-			'document' => {validate => '/^\S+[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]{1,255}$/', format => {path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_update => sub {_update_file(@_);}, for_view => sub {_view_file(@_)}}, type => 'file'},
-			'image' => {validate => '/^\S+[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]{1,255}$/', format => {path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_image(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
-			'media' => {validate => '/^\S+[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]{1,255}$/', format => {path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_media(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
-			'video' => {validate => '/^\S+[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]{1,255}$/', format => {path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_video(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
-			'audio' => {validate => '/^\S+[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]{1,255}$/', format => {path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_audio(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
+			'document' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+$/', format => {path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_update => sub {_update_file(@_);}, for_view => sub {_view_file(@_)}}, type => 'file'},
+			'image' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+\.(jpe?g|gif|png|bmp)$/', format => {path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_image(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
+			'media' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+$/', format => {path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_media(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
+			'video' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+$/', format => {path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_video(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
+			'audio' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+$/', format => {path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_audio(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
 			'ipv4' => {validate => 'IPV4'},
 			'boolean' => {validate => '/^[0-1]$/', sortopts => 'LABELNAME', options => {1 => 'Yes', 0 => 'No'}, format => {for_view => sub {my ($self, $column) = @_;my $options = {1 => 'Yes', 0 => 'No'};return $options->{$self->$column};}, for_search => sub {_search_boolean(@_)}, for_filter => sub {_search_boolean(@_)}}},
 		}
@@ -94,6 +94,7 @@ sub _config {
 	$config->{columns}->{'sound'} = $config->{columns}->{'audio'};
 	$config->{columns}->{'voice'} = $config->{columns}->{'audio'};
 	$config->{columns}->{'movie'} = $config->{columns}->{'video'};
+	$config->{columns}->{'web'} = $config->{columns}->{'url'};
 	return $config;
 }
 
@@ -136,13 +137,27 @@ sub load {
 	$args = {} unless ref $args eq 'HASH';
 	my $config = $self->config;
 	unless (exists $args->{loader} && defined $args->{loader}->{class_prefix}) {
-		return unless $config->{db}->{name};
-		$args->{loader}->{class_prefix} = $config->{db}->{name};
-		$args->{loader}->{class_prefix} =~ s/_(.)/\U$1/g;
-		$args->{loader}->{class_prefix} =~ s/[^\w:]/_/g;
-		$args->{loader}->{class_prefix} =~ s/\b(\w)/\u$1/g;
+		if (defined $args->{loader}->{base_class}) {
+			$args->{loader}->{class_prefix} = $args->{loader}->{base_class};
+		}
+		elsif (defined $config->{db}->{name}) {
+			if ($config->{db}->{type} eq 'SQLite') {
+				my ($file, $ext) = ($config->{db}->{name} =~ /.*[\\\/](.*?)(\.[^\.]+)?$/);
+				$args->{loader}->{class_prefix} = ucfirst $file if $file;
+			}
+			else {
+				$args->{loader}->{class_prefix} = $config->{db}->{name};
+				$args->{loader}->{class_prefix} =~ s/_(.)/\U$1/g;
+				$args->{loader}->{class_prefix} =~ s/[^\w:]/_/g;
+				$args->{loader}->{class_prefix} =~ s/\b(\w)/\u$1/g;
+			}
+		}
 	}
-	return if (defined $config->{db}->{check_class} && "$config->{db}->{check_class}"->isa('Rose::DB::Object')) || "$args->{loader}->{class_prefix}::DB::Object::AutoBase1"->isa('Rose::DB::Object');
+	
+	my $base_class_counter = 1;
+	$base_class_counter++ unless defined $args->{loader}->{db} || defined $args->{loader}->{db_class};
+	
+	return if (defined $config->{db}->{check_class} && "$config->{db}->{check_class}"->isa('Rose::DB::Object')) || (defined $args->{loader}->{class_prefix} && "$args->{loader}->{class_prefix}::DB::Object::AutoBase$base_class_counter"->isa('Rose::DB::Object')) || "Rose::DB::Object::LoaderGenerated::AutoBase$base_class_counter"->isa('Rose::DB::Object');
 
 	unless (defined $args->{loader}->{db} || defined $args->{loader}->{db_class}) {
 		unless (defined $args->{loader}->{db_dsn}) {
@@ -885,8 +900,11 @@ sub render_as_table {
 					($table_alias, $table_to_class) = _alias_table($args{get}->{with_objects}, $class, \$counter, $table_alias, $table_to_class) if $args{get}->{with_objects};
 					($table_alias, $table_to_class) = _alias_table($args{get}->{require_objects}, $class, \$counter, $table_alias, $table_to_class) if $args{get}->{require_objects};
 				}
-
-				foreach my $searchable_column (@{$args{searchable}}) {
+				
+				my $searchable_columns;
+				ref $args{searchable} eq 'ARRAY' ? ($searchable_columns = $args{searchable}) : ($searchable_columns = $class->meta->column_names);
+				
+				foreach my $searchable_column (@{$searchable_columns}) {
 					my ($search_values, $search_class, $search_column, $search_method);
 					if ($searchable_column =~ /\./) {
 						my $search_table;
@@ -1463,7 +1481,7 @@ sub render_as_menu {
 				}
 			}
 
-			my $shortcuts = ['create', 'edit', 'copy', 'delete', 'ajax', 'prepared'];
+			my $shortcuts = ['create', 'edit', 'copy', 'delete', 'ajax', 'prepared', 'searchable'];
 			
 			foreach my $shortcut (@{$shortcuts}) {
 				$options->{$shortcut} = 1 if $args{$shortcut} && ! exists $options->{$shortcut};
@@ -2470,9 +2488,9 @@ Rose::DBx::Object::Renderer - Web UI Rendering for Rose::DB::Object
 
 =head1 DESCRIPTION
 
-Rose::DBx::Object::Renderer generates web UIs for L<Rose::DB::Object>. It encapsulates many web conventions in the generated UIs as default behaviours. For example, email addresses are by default rendered as C<mailto> links in tables and appropiate validation is enforced automatically in forms. These behaviours are highly extensible. 
+Rose::DBx::Object::Renderer generates forms, tables, menus, and charts for L<Rose::DB::Object>. The generated UIs encapsulates sensible web conventions as default behaviours, such as rendering email addresses as 'mailto' links and enforce appropriate validation in forms. These default behaviours are highly configurable.
 
-Renderer uses L<CGI::FormBuilder> to generate forms and the Google Chart API to render charts. L<Template::Toolkit> is used for template processing, however, Renderer can dynamically generate a full set of UIs without any templates.
+Rose::DBx::Object::Renderer uses L<CGI::FormBuilder> to generate forms and the Google Chart API to render charts. L<Template::Toolkit> is used for template processing, although UIs can be generated out of the box without using templates.
 
 =head1 RESTRICTIONS
 
@@ -2519,7 +2537,6 @@ The C<db> option is for configuring database related settings, for instance:
       username => 'admin',
       password => 'password',
       tables_are_singular => 1,  # defines table name conventions, defaulted to undef
-      like_operator => 'ilike',  # to perform case-insensitive LIKE pattern matching in PostgreSQL, defaulted to 'like'
       table_prefix => 'app_', # specificies the prefix used in your table names if any, defaulted to undef
       new_or_cached => 0, # whether to use Rose::DB's new_or_cached() method, defaulted to 1
       check_class => 'Company::DB', # skip loading classes if the given class is already loaded (for persistent environments)
@@ -2782,7 +2799,7 @@ The template file name. When it is set to 1, rendering methods will try to find 
   Company::Employee::Manager->render_as_table(template => 1);
   # tries to use the template 'table.tt'
 
-In C<render_as_table> or C<render_as_menu>, a hash ref can be used as a shortcut to specify the default templates for all the forms and tables. For example:
+In C<render_as_table> or C<render_as_menu>, a hashref can be used as a shortcut to specify the default templates for all the forms and tables. For example:
 
   Company::Employee::Manager->render_as_menu(
     template => {menu => 'custom_menu.tt', table => 'custom_table.tt', form => 'custom_form.tt'}
@@ -3066,18 +3083,32 @@ This specifies an arrayref of columns that are filterable via URL. This can be u
 
 =item C<searchable>
 
-The C<searchable> option allows keyword search in multiple columns, including the columns of foreign objects:
+The C<searchable> option enables keyword searches accross multiple table columns using the LIKE operator in SQL, including the columns of foreign objects:
 
   Company::Employee::Manager->render_as_table(
     get => {with_objects => [ 'position' ]},
     searchable => ['first_name', 'last_name', 'position.title'],
   );
 
-This option adds a text field named 'q' in the rendered table for entering keywords. C<render_as_table()> grabs the value of the C<q> parameter if it exists, otherwise it pulls the 'q' value from querystring. The C<searchable> option constructs SQL queries using the 'LIKE' operator (configurable via C<like_operator>). 
+This option adds a text field named 'q' in the rendered table for entering keywords. C<render_as_table()> grabs the value of the argument C<q> if it exists, otherwise pulls the value of the param 'q' from querystring.
 
-Since PostgreSQL does not like mixing table aliases with real table names in queries, and disabled auto type casting in 8.3, C<render_as_table()> tries to perform basic table aliasing and type casting for non-character based columns automatically for PostgreSQL. Please note that the corresponding tables in chained relationships defined via 'with_objects' and 'require_objects', such as 'vendor.region', will require manual table aliasing if they are specified in the C<searchable> array.
+Since PostgreSQL does not like mixing table aliases with real table names in queries, C<render_as_table()> tries to perform basic table aliasing for non-character based columns in PostgreSQL automatically. Please note that the corresponding tables in chained relationships defined via 'with_objects' and 'require_objects', such as 'vendor.region', will still require manual table aliasing if their columns are specified in the C<searchable> array.
 
-By default, comma is the delimiter for seperating multiple keywords. This is configurable via C<config()>.
+In order to use the LIKE operator in SQL queries, C<render_as_table()> also performs type casting for non-character based columns, such as date, in PostgreSQL and SQLite.
+
+By default, comma is the delimiter for seperating multiple keywords. This is configurable via C<config()>. 
+
+Instead of an arrayref, you can also pass in 1, e.g.:
+
+  Company::Employee::Manager->render_as_table(
+    searchable => 1,
+  );
+
+In this case, all the columns of the given table will be searched.
+
+=item C<like_operator>
+
+The 'LIKE' operator for generating SQL queries when C<searchable> is used. Set this to 'like' to perform a case-sensitive search for PostgreSQL.
 
 =item C<get>
 
@@ -3214,6 +3245,11 @@ C<render_as_table> passes the following list of variables to a template:
 C<render_as_menu> generates a menu with the given list of classes and renders a table for the current class. We can have fine-grained control over each table within the menu. For example, we can alter the 'date_of_birth' field inside the 'create' form of the 'Company::Employee' table inside the menu:
 
   Company::Employee::Manager->render_as_menu (
+    create => 1,
+    edit => 1,
+    delete => 1,
+    copy => 1,
+    searchable => 1,
     order => ['Company::Employee', 'Company::Position'],
     items => {
       'Company::Employee' => {
@@ -3225,9 +3261,6 @@ C<render_as_menu> generates a menu with the given list of classes and renders a 
         title => 'Current Positions',
       }
     },
-    create => 1,
-    edit => 1,
-    delete => 1,
   );
 
 =over
@@ -3240,7 +3273,7 @@ The C<order> parameter defines the list of classes to be shown in the menu as we
 
 The C<items> parameter is a hashref of parameters to control each table within the menu.
 
-=item C<create>, C<copy>, C<edit>, C<delete>, C<template>, and C<ajax>
+=item C<create>, C<edit>, C<copy>, C<delete>, C<searchable>, C<template>, C<ajax>, and C<prepared>
 
 These parameters are shortcuts which get passed to all the underlying tables rendered by the menu.
 

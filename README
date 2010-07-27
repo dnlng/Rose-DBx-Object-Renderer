@@ -1,15 +1,8 @@
 Rose-DBx-Object-Renderer
 
-The README is used to introduce the module and provide instructions on
-how to install the module, any machine dependencies it may have (for
-example C compilers and installed libraries) and any other information
-that should be provided before the module is installed.
+Rose::DBx::Object::Renderer is a Perl module that generates forms, tables, menus, and charts for Rose::DB::Object. The generated UIs encapsulates sensible web conventions as default behaviours, such as rendering email addresses as 'mailto' links and enforce appropriate validation in forms. These default behaviours are highly configurable.
 
-A README file is required for CPAN modules since CPAN extracts the README
-file from a module distribution so that people browsing the archive
-can use it to get an idea of the module's uses. It is usually a good idea
-to provide version information here so that people can decide whether
-fixes for the module are worth downloading.
+Rose::DBx::Object::Renderer uses CGI::FormBuilder to generate forms and the Google Chart API to render charts. Template::Toolkit is used for template processing, although UIs can be generated out of the box without using templates.
 
 
 INSTALLATION
@@ -21,20 +14,20 @@ To install this module, run the following commands:
 	make test
 	make install
 
+SAMPLE TEMPLATES
+
+There are four sample templates: 'form.tt', 'table.tt', 'menu.tt', and 'chart.tt' in the 'templates' folder.
+
 SUPPORT AND DOCUMENTATION
 
-After installing, you can find documentation for this module with the
-perldoc command.
+After installing, you can find documentation for this module with the perldoc command.
 
     perldoc Rose::DBx::Object::Renderer
 
 You can also look for information at:
 
-    RT, CPAN's request tracker
-        http://rt.cpan.org/NoAuth/Bugs.html?Dist=Rose-DBx-Object-Renderer
-
-    AnnoCPAN, Annotated CPAN documentation
-        http://annocpan.org/dist/Rose-DBx-Object-Renderer
+    Github
+        http://github.com/dannyglue/Rose-DBx-Object-Renderer
 
     CPAN Ratings
         http://cpanratings.perl.org/d/Rose-DBx-Object-Renderer
@@ -45,8 +38,7 @@ You can also look for information at:
 
 COPYRIGHT AND LICENCE
 
-Copyright (C) 2008 Xufeng (Danny) Liang
+Copyright (C) 2008-2010 Xufeng (Danny) Liang
 
-This program is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself.
+This program is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
 

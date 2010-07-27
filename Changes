@@ -1,9 +1,15 @@
 Revision history for Rose-DBx-Object-Renderer
 
-0.74    19/07/2010
-        Fixed a bug in render_as_table() when including non-character based columns from sqlite in keyword searches.
+0.74    27/07/2010
+        Fixed the logic for checking if the auto generated Rose object base class is loaded already.
+        Added the 'searchable => 1' option to render_as_table(), and render_as_menu().
+        Improved 'class_prefix' generation for SQLite.
+        Fixed a bug in render_as_table() when including non-character based columns from SQLite in keyword searches.
         Updated the column definitions for 'date', 'datetime' to allow editing and searching in YYYY-MM-DD.
+        Updated the regular expression validation for file-related columns.
+        Updated the 'for_view' method for the 'money' column definition.
         Minor UI updates to render_as_table() and to the default 'table.tt'.
+        Updated POD.
 0.73    13/07/2010
         Fixed a bug introduced in 0.71 where rendering methods failed to use custom stringify_me() methods (Reported by Gary Ashton-Jones).
         Minor code refactoring.
