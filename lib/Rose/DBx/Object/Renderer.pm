@@ -22,7 +22,7 @@ use Digest::MD5 ();
 use Scalar::Util ();
 
 our $VERSION = 0.74;
-# 223.59
+# 224.59
 
 sub _config {
 	my $config = {
@@ -827,7 +827,7 @@ sub render_as_table {
 
 	my ($objects, $previous_page, $next_page, $last_page, $total);
 
-	my $param_list = {'sort_by' => 'sort_by', 'per_page' => 'per_page', 'page' => 'page', 'q' => 'q', 'ajax' => 'ajax', 'action' => 'action', 'object' => 'object', 'hide_table'};
+	my $param_list = {'sort_by' => 'sort_by', 'per_page' => 'per_page', 'page' => 'page', 'q' => 'q', 'ajax' => 'ajax', 'action' => 'action', 'object' => 'object', 'hide_table' => 'hide_table'};
 
 	if ($args{prefix}) {
 		foreach my $param (keys %{$param_list}) {
