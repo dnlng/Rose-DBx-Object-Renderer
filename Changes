@@ -1,6 +1,7 @@
 Revision history for Rose-DBx-Object-Renderer
 
-0.74    28/07/2010
+0.74    30/07/2010
+        Updated default CSS.
         Fixed a bug related to hiding the output of render_as_table() via query param.
         Fixed the logic for checking if the auto generated Rose object base class is loaded already.
         Added the 'searchable => 1' option to render_as_table(), and render_as_menu().
