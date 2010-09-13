@@ -22,15 +22,16 @@ use Digest::MD5 ();
 use Scalar::Util ();
 
 our $VERSION = 0.74;
-# 226.59
+# 228.60
 
 sub _config {
 	my $config = {
 		db => {name => undef, type => 'mysql', host => '127.0.0.1', port => undef, username => 'root', password => 'root', tables_are_singular => undef, table_prefix => undef, new_or_cached => 1, check_class => undef},
-		template => {path => 'templates', url => 'templates'},
+		template => {path => 'templates', url => 'templates', options => undef},
 		upload => {path => 'uploads', url => 'uploads', keep_old_files => undef},
 		form => {download_message => 'Download File', cancel => 'Cancel', delimiter => ','},
-		table => {search_result_title => 'Search Results for "[% q %]"', empty_message => 'No Record Found.', no_pagination => undef, per_page => 15, pages => 9, or_filter => undef, delimiter => ', ', keyword_delimiter => ',', inherit_form_options => ['before', 'order', 'fields', 'template']},
+		table => {search_result_title => 'Search Results for "[% q %]"', empty_message => 'No Record Found.', no_pagination => undef, per_page => 15, pages => 9, or_filter => undef, delimiter => ', ', keyword_delimiter => ',', inherit_options => ['template_url', 'template_path', 'template_data'], inherit_form_options => ['before', 'order', 'fields', 'template'], like_operator => undef},
+		menu => {shortcuts => ['create', 'edit', 'copy', 'delete', 'ajax', 'prepared', 'searchable'], inherit_options => ['template_url', 'template_path', 'template_data']},
 		misc => {time_zone => 'Australia/Sydney', stringify_delimiter => ' ', doctype => '<!DOCTYPE HTML>', html_head => '<style type="text/css">body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td{margin:0;padding:0;}table{border-collapse:collapse;border-spacing:0;}fieldset,img{border:0;}address,caption,cite,code,dfn,em,strong,th,var{font-style:normal;font-weight:normal;}ol,ul{list-style:none;}caption,th{text-align:left;}h1,h2,h3,h4,h5,h6{font-size:100%;font-weight:normal;}q:before,q:after{content:\'\';}abbr,acronym{border:0;}body{font-size:93%;font-family:"Lucida Grande",Helvetica,Arial,Verdana,sans-serif;color:#222;}a,a:hover{color:#1B80BB;text-decoration:none;}a:hover{color:#0D3247;}a.button{white-space:nowrap;background-color:rgba(0,0,0,0.05);padding:5px 8px;-moz-border-radius:4px;-webkit-border-radius:4px;border-radius:4px;-moz-transition:background-color 0.2s linear;-webkit-transition:background-color 0.2s linear;-o-transition:background-color 0.2s linear;}a.button:hover{background-color:rgba(0,0,0,0.25);color:rgba(255,255,255,1);-webkit-box-shadow:0px 0px 3px rgba(0,0,0,0.1);-moz-box-shadow:0px 0px 3px rgba(0,0,0,0.1);box-shadow:0px 0px 3px rgba(0,0,0,0.1);}a.button:active{background-color:rgba(0,0,0,0.4);}a.delete{color:#BA1A1A;}p{padding:10px 20px;}form td{border:0px;text-align:left;}form tr:hover{background-color:rgba(255,255,255,0.1);}.fb_required{font-weight:bold;}.fb_error,.fb_invalid,.warning{color:#BA1A1A;}label{color:#333;}input,textarea,select{font-size:100%;font-family:"Lucida Grande",Helvetica,Arial,Verdana,sans-serif;color:#333;background-color:rgba(255,255,255,0.3);border:1px solid #DDD;margin:0px 5px;padding:4px 8px;-moz-border-radius:4px;-webkit-border-radius:4px;border-radius:4px;}input[type="text"],input[type="password"],select,textarea {-webkit-transition:border 0.2s linear,-webkit-box-shadow 0.2s linear;-moz-transition:border 0.2s linear,-moz-box-shadow 0.2s linear;-o-transition:border 0.2s linear,box-shadow 0.2s linear;}input[type="text"]:focus,input[type="password"]:focus,select:focus,textarea:focus {outline:none;border:1px solid #BBB;-webkit-box-shadow:0 0 6px rgba(0,0,0,0.4);-moz-box-shadow:0 0 6px rgba(0,0,0,0.4);box-shadow:0 0 6px rgba(0,0,0,0.4);}input[type="radio"],input[type="submit"]{font-size:108%;padding:4px 8px;-moz-border-radius:5px;-webkit-border-radius:5px;border-radius:5px;cursor:pointer;background-color:#EEE;background:-moz-linear-gradient(top,#FFF 0%,#DFDFDF 40%,#C3C3C3 100%);background:-webkit-gradient(linear, left top, left bottom, from(#FFF), to(#C3C3C3), color-stop(0.4, #DFDFDF));-moz-transition:-moz-box-shadow 0.3s linear;-webkit-transition:-webkit-box-shadow 0.3s linear;text-shadow:0px 1px 1px rgba(255,255,255,0.9);-webkit-box-shadow:0 2px 3px rgba(0,0,0,0.4);-moz-box-shadow:0 2px 3px rgba(0,0,0,0.4);box-shadow:0 2px 3px rgba(0,0,0,0.4);}input:hover[type="submit"]{background:#D0D0D0;color:#0D3247;background:-moz-linear-gradient(top,#FFF,#B0B0B0);background:-webkit-gradient(linear,left top,left bottom,from(#FFF), to(#B0B0B0));-webkit-box-shadow:0 2px 9px rgba(0,0,0,0.4);-moz-box-shadow:0 2px 9px rgba(0,0,0,0.4);box-shadow:0 2px 9px rgba(0,0,0,0.4);}input:active[type="submit"]{background:-webkit-gradient(linear,left top,left bottom,from(#B0B0B0), to(#EEE));background:-moz-linear-gradient(top,#B0B0B0,#EEE);-webkit-box-shadow:0 1px 5px rgba(0,0,0,0.8);-moz-box-shadow:0 1px 5px rgba(0,0,0,0.8);box-shadow:0 1px 5px rgba(0,0,0,0.8);}h1,h2{font-size:350%;padding:15px;text-shadow:0px 1px 2px rgba(0,0,0,0.4);}p{padding:10px 20px;}div{padding:10px 10px 10px 10px;}table{padding:5px 10px;width:100%;}th,td{padding:14px 6px;border-bottom:1px solid #F3F3F3;border-bottom:1px solid rgba(0,0,0,0.025);font-size:85%;}th{color:#666;font-size:108%;font-weight:normal;border:0;background-color:#E0E0E0;background:-moz-linear-gradient(top,rgba(243,243,243,0.5) 0%,rgba(208,208,208,0.9) 80%,rgba(207,207,207,0.9) 100%);background:-webkit-gradient(linear,left top,left bottom,from(rgba(243,243,243,0.5)),to(rgba(207,207,207,0.9)),color-stop(0.8, rgba(208,208,208,0.9)));text-shadow:0px 1px 1px rgba(255,255,255,0.9);}tr{background-color:rgba(255,255,255,0.1);}tr:hover{background-color:rgba(0,0,0,0.025);}div.block{padding:5px;text-align:right;font-size:108%;}.menu{background-color:#E3E3E3;background:-moz-linear-gradient(top,rgba(240,240,240,0.5) 0%,rgba(224,224,224,0.9) 60%,rgba(221,221,221,0.9) 100%);background:-webkit-gradient(linear,left top,left bottom,from(rgba(240,240,240,0.5)),to(rgba(221,221,221,0.9)),color-stop(0.6,rgba(224,224,224,0.9)));padding:0px;width:100%;height:37px;-moz-border-radius-topleft:5px;-moz-border-radius-topright:5px;-webkit-border-top-left-radius:5px;-webkit-border-top-right-radius:5px;border-top-left-radius:5px;border-top-right-radius:5px;}.menu ul{padding:10px 6px 0px 6px;}.menu ul li{display:inline;}.menu ul li a{text-shadow:0px 1px 1px rgba(255,255,255,0.9);float:left;display:block;color:#555;background-color:#D0D0D0;text-decoration:none;margin:0px 4px;padding:6px 18px;height:15px;-moz-border-radius-topleft:5px;-moz-border-radius-topright:5px;-webkit-border-top-left-radius:5px;-webkit-border-top-right-radius:5px;border-top-left-radius:5px;border-top-right-radius:5px;-moz-transition:background-color 0.2s linear;-webkit-transition:background-color 0.2s linear;-o-transition:background-color 0.2s linear;}.menu ul li a:hover,.menu ul li a.current{-webkit-box-shadow:0px -2px 3px rgba(0,0,0,0.07);-moz-box-shadow:0px -2px 3px rgba(0,0,0,0.07);box-shadow:0px -2px 3px rgba(0,0,0,0.07);}.menu ul li a:hover{background-color:#F0F0F0;color:#0D3247;}.menu ul li a:active{background-color:#FFF;color:#1B80BB;}.menu ul li a.current,.menu ul li a.current:hover{cursor:pointer;background-color:#FFF;}.pager{display:block;float:left;padding:2px 6px;border:1px solid #D0D0D0;margin-right:1px;background-color:rgba(255,255,255,0.1);-moz-border-radius:3px;-webkit-border-radius:3px;border-radius:3px;-moz-transition:border 0.2s linear;-webkit-transition:border 0.2s linear;-o-transition:border 0.2s linear;}a.pager:hover{border:1px solid #1B80BB;}</style>'},
 		columns => {
 			'integer' => {validate => 'INT', sortopts => 'NUM'},
@@ -61,7 +62,7 @@ sub _config {
 			'money' => {validate => '/^\-?\d{1,11}(\.\d{2})?$/', sortopts => 'NUM', format => {for_view => sub {my ($self, $column) = @_;return unless defined $self->$column;return sprintf ('$%.02f', $self->$column);}, for_edit => sub {my ($self, $column) = @_;return unless defined $self->$column;return sprintf ('%.02f', $self->$column);}}},
 			'percentage' => {validate => 'NUM', sortopts => 'NUM', comment => 'e.g.: 99.8', format => {for_view => sub {my ($self, $column, $value) = @_;$value = $self->$column;return unless $value;my $p = $value*100;return "$p%";}, for_edit => sub {my ($self, $column) = @_;my $value = $self->$column;return unless defined $value;return $value*100;}, for_update => sub {my ($self, $column, $value) = @_;return $self->$column($value/100) if $value;},  for_search => sub {_search_percentage(@_);}, for_filter => sub {_search_percentage(@_);}}},
 			'document' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+$/', format => {path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_update => sub {_update_file(@_);}, for_view => sub {_view_file(@_)}}, type => 'file'},
-			'image' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+\.(jpe?g|gif|png|bmp)$/', format => {path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_image(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
+			'image' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+$/', format => {path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_image(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
 			'media' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+$/', format => {path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_media(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
 			'video' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+$/', format => {path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_video(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
 			'audio' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+$/', format => {path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_audio(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
@@ -435,20 +436,14 @@ sub _before {
 sub render_as_form {
 	my ($self, %args) = (@_);
 	_before($self, \%args) if exists $args{before};	
-	my ($class, $form_action, $field_order, $output, $relationship_object, $renderer_config);
+	my ($class, $form_action, $field_order, $output, $relationship_object);
 	my $table = $self->meta->table;
 	my $form_title = $args{title};
 	$class = ref $self || $self;
+	my $renderer_config = _renderer_config($class, $args{prepared});
+	my ($ui_type) = (caller(0))[3] =~ /^.*_(\w+)$/;
+	my $form_config = _ui_config($ui_type, $renderer_config, \%args);
 	
-	if ($args{prepared} || $class->can('renderer_config')) {
-		$renderer_config = _get_renderer_config($class);
-	}
-	else {
-		$renderer_config = $class->prepare_renderer();
-	}
-	
-	my $ui_type = (caller(0))[3];
-	($ui_type) = $ui_type =~ /^.*_(\w+)$/;
 	my $form_id = _identify($class, $args{prefix}, $ui_type);
 	my $field_prefix = '';
 	$field_prefix = $form_id . '_' if defined $args{prefix};
@@ -474,8 +469,7 @@ sub render_as_form {
 		$form_title ||= _label($form_action . ' ' . _singularise_table(_title($table, $renderer_config->{db}->{table_prefix}), $renderer_config->{db}->{tables_are_singular}));
 	}
 
-	my $download_message = $args{download_message} || $renderer_config->{form}->{download_message};
-	my $cancel = $args{cancel} || $renderer_config->{form}->{cancel};
+	my $cancel = $form_config->{cancel};
 	my $template_url = $args{template_url} || $renderer_config->{template}->{url};
 	my $template_path = $args{template_path} || $renderer_config->{template}->{path};
 	(my $html_head = $args{html_head} || $renderer_config->{misc}->{html_head}) =~ s/\[%\s*title\s*%\]/$form_title/;
@@ -616,7 +610,7 @@ sub render_as_form {
 							$field_def->{value} = $self->$column;
 						}
 						elsif (exists $field_def->{multiple} && $field_def->{multiple} && $field_def->{options}) {
-							my $delimiter = '\\' . $renderer_config->{form}->{delimiter};
+							my $delimiter = '\\' . $form_config->{delimiter};
 							$field_def->{value} = [split /$delimiter/, $self->$column];
 						}
 						else {
@@ -659,7 +653,7 @@ sub render_as_form {
 					unless (exists $field_def->{comment}) {
 						my $value = $form->cgi_param($form_id.'_'.$column) || $form->cgi_param($column) || $self->$column;
 						my $file_location = _get_file_url($self, $column, $value);
-						$field_def->{comment} = '<a class="download_message" href="'.$file_location.'">'.$download_message.'</a>' if $file_location;
+						$field_def->{comment} = '<a class="download_message" href="'.$file_location.'">'. $form_config->{download_message} .'</a>' if $file_location;
 					}
 				}
 			}
@@ -705,28 +699,34 @@ sub render_as_form {
 
 	$form->{submit} = $args{controller_order};
 	$args{template_data} ||= {};
-	$form->template({
-						variable => 'form', 
-						data => {
-							template_url => $template_url,
-							javascript_code => $args{javascript_code},
-							field_order => $field_order,
-							form_id => $form_id,
-							form_submit => _touch_up($form->prepare->{submit}, $cancel, $form_id),
-							title => $form_title,
-							description => $args{description},
-							doctype => $renderer_config->{misc}->{doctype},
-							html_head => $html_head,
-							no_head => $args{no_head},
-							self => $self,
-							cancel => $cancel,
-							extra => $args{extra},
-							%{$args{template_data}}
-						},
-						template => $form_template, 
-						engine => {INCLUDE_PATH => $template_path}, 
-						type => 'TT2'
-					}) if $args{template};
+	
+	if ($args{template}) {
+		my $template_options = $args{template_options} || $renderer_config->{template}->{options};
+		$template_options->{INCLUDE_PATH} ||= $template_path;
+			
+		$form->template({
+			variable => 'form', 
+			data => {
+				template_url => $template_url,
+				javascript_code => $args{javascript_code},
+				field_order => $field_order,
+				form_id => $form_id,
+				form_submit => _touch_up($form->prepare->{submit}, $cancel, $form_id),
+				title => $form_title,
+				description => $args{description},
+				doctype => $renderer_config->{misc}->{doctype},
+				html_head => $html_head,
+				no_head => $args{no_head},
+				self => $self,
+				cancel => $cancel,
+				extra => $args{extra},
+				%{$args{template_data}}
+			},
+			template => $form_template, 
+			engine => $template_options, 
+			type => 'TT2'
+		});
+	}
 
 	if ($form->submitted) {
 		if ($form->submitted ne $cancel) {
@@ -788,37 +788,21 @@ sub render_as_form {
 sub render_as_table {
 	my ($self, %args) = (@_);
 	_before($self, \%args) if exists $args{before};
-	my ($table, @controllers, $output, $query_hidden_fields, $q, $sort_by_column, $table_config, $renderer_config);
+	my ($table, @controllers, $output, $query_hidden_fields, $q, $sort_by_column);
 	my $class = $self->object_class();
 	my $query = $args{cgi} || CGI->new;
 	my $url = $args{url} || $query->url(-absolute => 1);
-	
-	if ($args{prepared} || $class->can('renderer_config')) {
-		$renderer_config = _get_renderer_config($class);
-	}
-	else {
-		$renderer_config = $class->prepare_renderer();
-	}
-	
-	foreach my $option (keys %{$renderer_config->{table}}) {
-		if (defined $args{$option}) {
-			$table_config->{$option} = $args{$option};
-		}
-		else {
-			$table_config->{$option} = $renderer_config->{table}->{$option};
-		}
-	}
+	my $renderer_config = _renderer_config($class, $args{prepared});
+	my ($ui_type) = (caller(0))[3] =~ /^.*_(\w+)$/;
+	my $table_config = _ui_config($ui_type, $renderer_config, \%args);
 
+	my $table_id = _identify($class, $args{prefix}, $ui_type);
 	my $table_title = $args{title} || _label(_pluralise_table(_title($class->meta->table, $renderer_config->{db}->{table_prefix}), $renderer_config->{db}->{tables_are_singular}));
 
-	my $like_operator = $args{like_operator} || ($class->meta->db->driver eq 'pg'?'ilike':'like');
+	my $like_operator = $table_config->{like_operator} || ($class->meta->db->driver eq 'pg'?'ilike':'like');
 	my $template_url = $args{template_url} || $renderer_config->{template}->{url};
 	my $template_path = $args{template_path} || $renderer_config->{template}->{path};
 	(my $html_head = $args{html_head} || $renderer_config->{misc}->{html_head}) =~ s/\[%\s*title\s*%\]/$table_title/;
-
-	my $ui_type = (caller(0))[3];
-	($ui_type) = $ui_type =~ /^.*_(\w+)$/;
-	my $table_id = _identify($class, $args{prefix}, $ui_type);
 
 	my $primary_key = $class->meta->primary_key_column_names->[0];
 	my $relationships = _get_relationships($class);
@@ -1012,13 +996,13 @@ sub render_as_table {
 				
 				$args{$action}->{no_head} = $args{no_head} if exists $args{no_head} && ! exists $args{$action}->{no_head};
 				$args{$action}->{prepared} = $args{prepared} if exists $args{prepared} && ! exists $args{$action}->{prepared};
-
-				if (exists $table_config->{inherit_form_options}) {
-					foreach my $option (@{$table_config->{inherit_form_options}}) {
-						_inherit_form_option($option, $action, \%args);
-					}
+				
+				_inherit_options($table_config->{inherit_options}, \%args, $args{$action});
+				
+				foreach my $option (@{$table_config->{inherit_form_options}}) {
+					_inherit_form_option($option, $action, \%args);
 				}
-
+								
 				$args{$action}->{order} ||= $args{order} if $args{order};			
 				$args{$action}->{template} ||= _template($args{template}, 'form', 1) if $args{template};
 				
@@ -1279,7 +1263,8 @@ sub render_as_table {
 			}
 
 			$args{template_data} ||= {};
-			$html_table = _render_template(options => $args{template_options}, template_path => $template_path, file => $template, output => 1, data => {
+			my $template_options = $args{template_options} || $renderer_config->{template}->{options};
+			$html_table = _render_template(options => $template_options, template_path => $template_path, file => $template, output => 1, data => {
 				template_url => $template_url,
 				javascript_code => $args{javascript_code},
 				ajax => $ajax,
@@ -1401,17 +1386,14 @@ sub render_as_menu {
 	
 	my($menu, $hide_menu_param, $current_param, $output, $content, $item_order, $items, $current, $template);
 	my $class = $self->object_class();
-
+	my $renderer_config = _renderer_config($class, $args{prepared});
+	my ($ui_type) = (caller(0))[3] =~ /^.*_(\w+)$/;
+	my $menu_config = _ui_config($ui_type, $renderer_config, \%args);
+	
+	my $menu_id = _identify($class, $args{prefix}, $ui_type);
 	my $menu_title = $args{title};
-
-	my $renderer_config = _get_renderer_config($class);
-
 	my $template_url = $args{template_url} || $renderer_config->{template}->{url};
 	my $template_path = $args{template_path} || $renderer_config->{template}->{path};
-
-	my $ui_type = (caller(0))[3];
-	($ui_type) = $ui_type =~ /^.*_(\w+)$/;
-	my $menu_id = _identify($class, $args{prefix}, $ui_type);
 
 	if ($args{prefix}) {
 		$hide_menu_param = $menu_id.'_hide_menu';
@@ -1480,13 +1462,13 @@ sub render_as_menu {
 					$options->{template} = 1;
 				}
 			}
-
-			my $shortcuts = ['create', 'edit', 'copy', 'delete', 'ajax', 'prepared', 'searchable'];
 			
-			foreach my $shortcut (@{$shortcuts}) {
+			_inherit_options($menu_config->{inherit_options}, \%args, $options);
+			
+			foreach my $shortcut (@{$menu_config->{shortcuts}}) {
 				$options->{$shortcut} = 1 if $args{$shortcut} && ! exists $options->{$shortcut};
 			}
-
+			
 			$options->{no_head} = 1;
 			$output->{table} = "$item\::Manager"->render_as_table(%{$options});
 			$menu_title ||= $items->{$item}->{label};
@@ -1498,8 +1480,9 @@ sub render_as_menu {
 	my $html_head = $args{html_head} || $renderer_config->{misc}->{html_head};
 
 	if ($args{template}) {
+		my $template_options = $args{template_options} || $renderer_config->{template}->{options};
 	 	$menu = _render_template(
-			options => $args{template_options},
+			options => $template_options,
 			template_path => $template_path,
 			file => $template, 
 			output => 1,
@@ -1544,22 +1527,13 @@ sub render_as_chart {
 	my ($self, %args) = (@_);
 	_before($self, \%args) if exists $args{before};
 	my $class = $self->object_class();
-	my $renderer_config;
-	
-	if ($args{prepared} || $class->can('renderer_config')) {
-		$renderer_config = _get_renderer_config($class);
-	}
-	else {
-		$renderer_config = $class->prepare_renderer();
-	}
+	my $renderer_config = _renderer_config($class, $args{prepared});
 	
 	my $title = $args{title} || _label(_pluralise_table(_title($class->meta->table, $renderer_config->{db}->{table_prefix}), $renderer_config->{db}->{tables_are_singular}));
 	my $template_url = $args{template_url} || $renderer_config->{template}->{url};
 	my $template_path = $args{template_path} || $renderer_config->{template}->{path};
 	(my $html_head = $args{html_head} || $renderer_config->{misc}->{html_head}) =~ s/\[%\s*title\s*%\]/$title/;
-
-	my $ui_type = (caller(0))[3];
-	($ui_type) = $ui_type =~ /^.*_(\w+)$/;
+	my ($ui_type) = (caller(0))[3] =~ /^.*_(\w+)$/;
 	my $chart_id = _identify($class, $args{prefix}, $ui_type);
 
 	my $hide_chart_param;
@@ -1690,8 +1664,10 @@ sub render_as_chart {
 			}
 
 			$args{template_data} ||= {};
+			
+			my $template_options = $args{template_options} || $renderer_config->{template}->{options};
 			$chart = _render_template(
-				options => $args{template_options},
+				options => $template_options,
 				template_path => $template_path,
 				file => $template,
 				output => 1,
@@ -1739,6 +1715,33 @@ sub _render_template {
 }
 
 #rdbo util
+
+sub _inherit_options {
+	my ($inherit_options, $args, $options) = @_;
+	foreach my $inherit_option (@{$inherit_options}) {
+		$options->{$inherit_option} = $args->{$inherit_option} if $args->{$inherit_option} && ! exists $options->{$inherit_option};
+	}
+}
+
+sub _ui_config {
+	my ($ui_type, $renderer_config, $args) = @_;
+	my $ui_config;
+	foreach my $option (keys %{$renderer_config->{$ui_type}}) {
+		if (defined $args->{$option}) {
+			$ui_config->{$option} = $args->{$option};
+		}
+		else {
+			$ui_config->{$option} = $renderer_config->{$ui_type}->{$option};
+		}
+	}
+	return $ui_config;
+}
+
+sub _renderer_config {
+	my ($class, $prepared) = @_;
+	return _get_renderer_config($class) if $prepared || $class->can('renderer_config');
+	return $class->prepare_renderer();
+}
 
 sub _get_renderer_config {
 	my $self = shift;
@@ -2552,6 +2555,7 @@ The C<template> option specifies the template toolkit C<INCLUDE_PATH> and the ba
     template => {
       path => '../templates:../alternative',  # TT INCLUDE_PATH, defaulted to 'templates'
       url => '../images',  # defaulted to 'templates'
+      options => {ABSOLUTE => 1, RELATIVE => 1, POST_CHOMP => 1} # defaulted to undef
     },
   });
 
@@ -2570,7 +2574,7 @@ Renderer needs a directory with write access to upload files. The C<upload> opti
 
 =head3 C<form>
 
-The C<form> option defines the default behaviours of C<render_as_form>:
+The C<form> option defines the global default behaviours of C<render_as_form>:
 
   $renderer->config({
     ...
@@ -2581,9 +2585,11 @@ The C<form> option defines the default behaviours of C<render_as_form>:
     },
   });
 
+These options can be also passed to C<render_as_form> directly to affect only the particular instance.
+
 =head3 C<table>
 
-The C<table> option defines the default behaviours of C<render_as_table>:
+The C<table> option defines the global default behaviours of C<render_as_table>:
 
   $renderer->config({
     ...
@@ -2596,13 +2602,31 @@ The C<table> option defines the default behaviours of C<render_as_table>:
       or_filter => 1,  # column filtering is joined by 'OR', defaulted to undef
       delimiter => '/',  # the delimiter for joining foreign objects in relationship columns, defaulted to ', '
       keyword_delimiter => '\s+',  # the delimiter for search keywords, defaulted to ','
-      inherit_form_options => ['order'], # only the field order can be inherited from other forms, defaulted to: ['before', 'order', 'fields', 'template']
+      inherit_form_options => ['order', 'template'], # options to be inherit by other forms, defaulted to ['before', 'order', 'fields', 'template']
+      inherit_options => ['template_data', 'extra'], # options to be inherited by all forms with the table, defaulted to ['template_url', 'template_path', 'template_data']
+      like_operator => 'like', # only applicable to Postgres, defaulted to undef, i.e. Renderer uses 'ilike' for Postgres by default
     },
   });
 
+These options can be also passed to C<render_as_table> directly to affect only the particular instance.
+
+=head3 C<menu>
+
+The C<menu> option defines the global default behaviours of C<render_as_menu>:
+
+  $renderer->config({
+    ...
+    menu => {
+      inherit_options => ['template_data', 'extra'], # options to be inherited by all tables with the menu, defaulted to ['template_url', 'template_path', 'template_data']
+      shortcuts => ['create', 'edit', 'searchable'] # shortcuts for options that can be set to true for all tables with the menu, defaulted to ['create', 'edit', 'copy', 'delete', 'ajax', 'prepared', 'searchable']
+    },
+  });
+
+These options can be also passed to C<render_as_menu> directly to affect only the particular instance.
+
 =head3 C<columns>
 
-Renderer has a built-in list of column definitions that encapsulate web-oriented conventions and behaviours. A column definition is a collection of column options. Column definitions are used by the rendering methods to generate web UIs. The built-in column definitions are stored inside C<columns>:
+Renderer has a built-in list of column definitions that encapsulate web conventions and behaviours. A column definition is a collection of column options. Column definitions are used by the rendering methods to generate web UIs. The built-in column definitions are stored inside C<columns>:
 
   my $config = $renderer->config();
   print join (', ', keys %{$config->{columns}});
@@ -2815,7 +2839,7 @@ An URL path variable that is passed to the templates.
 
 =item C<template_options>
 
-Optional parameters to be passed to L<Template Toolkit>. This is not applicable to C<render_as_form>.
+Optional parameters to be passed to the L<Template Toolkit> constructor.
 
 =item C<template_data>
 
