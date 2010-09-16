@@ -22,7 +22,7 @@ use Digest::MD5 ();
 use Scalar::Util ();
 
 our $VERSION = 0.74;
-# 230.61
+# 231.61
 
 sub _config {
 	my $config = {
@@ -30,8 +30,8 @@ sub _config {
 		template => {path => 'templates', url => 'templates', options => undef},
 		upload => {path => 'uploads', url => 'uploads', keep_old_files => undef},
 		form => {download_message => 'Download File', cancel => 'Cancel', delimiter => ','},
-		table => {search_result_title => 'Search Results for "[% q %]"', empty_message => 'No Record Found.', no_pagination => undef, per_page => 15, pages => 9, or_filter => undef, delimiter => ', ', keyword_delimiter => ',', inherit_options => ['template_url', 'template_path', 'template_options', 'query'], inherit_form_options => ['before', 'order', 'fields', 'template'], like_operator => undef},
-		menu => {shortcuts => ['create', 'edit', 'copy', 'delete', 'ajax', 'prepared', 'searchable'], inherit_options => ['template_url', 'template_path', 'template_options', 'query']},
+		table => {search_result_title => 'Search Results for "[% q %]"', empty_message => 'No Record Found.', no_pagination => undef, per_page => 15, pages => 9, or_filter => undef, delimiter => ', ', keyword_delimiter => ',', inherit_options => ['template_url', 'template_path', 'template_options', 'query', 'renderer_config'], inherit_form_options => ['before', 'order', 'fields', 'template'], like_operator => undef},
+		menu => {shortcuts => ['create', 'edit', 'copy', 'delete', 'ajax', 'prepared', 'searchable'], inherit_options => ['template_url', 'template_path', 'template_options', 'query', 'renderer_config']},
 		misc => {time_zone => 'Australia/Sydney', stringify_delimiter => ' ', doctype => '<!DOCTYPE HTML>', html_head => '<style type="text/css">body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td{margin:0;padding:0;}table{border-collapse:collapse;border-spacing:0;}fieldset,img{border:0;}address,caption,cite,code,dfn,em,strong,th,var{font-style:normal;font-weight:normal;}ol,ul{list-style:none;}caption,th{text-align:left;}h1,h2,h3,h4,h5,h6{font-size:100%;font-weight:normal;}q:before,q:after{content:\'\';}abbr,acronym{border:0;}body{font-size:93%;font-family:"Lucida Grande",Helvetica,Arial,Verdana,sans-serif;color:#222;}a,a:hover{color:#1B80BB;text-decoration:none;}a:hover{color:#0D3247;}a.button{white-space:nowrap;background-color:rgba(0,0,0,0.05);padding:5px 8px;-moz-border-radius:4px;-webkit-border-radius:4px;border-radius:4px;-moz-transition:background-color 0.2s linear;-webkit-transition:background-color 0.2s linear;-o-transition:background-color 0.2s linear;}a.button:hover{background-color:rgba(0,0,0,0.25);color:rgba(255,255,255,1);-webkit-box-shadow:0px 0px 3px rgba(0,0,0,0.1);-moz-box-shadow:0px 0px 3px rgba(0,0,0,0.1);box-shadow:0px 0px 3px rgba(0,0,0,0.1);}a.button:active{background-color:rgba(0,0,0,0.4);}a.delete{color:#BA1A1A;}p{padding:10px 20px;}form td{border:0px;text-align:left;}form tr:hover{background-color:rgba(255,255,255,0.1);}.fb_required{font-weight:bold;}.fb_error,.fb_invalid,.warning{color:#BA1A1A;}label{color:#333;}input,textarea,select{font-size:100%;font-family:"Lucida Grande",Helvetica,Arial,Verdana,sans-serif;color:#333;background-color:rgba(255,255,255,0.3);border:1px solid #DDD;margin:0px 5px;padding:4px 8px;-moz-border-radius:4px;-webkit-border-radius:4px;border-radius:4px;}input[type="text"],input[type="password"],select,textarea {-webkit-transition:border 0.2s linear,-webkit-box-shadow 0.2s linear;-moz-transition:border 0.2s linear,-moz-box-shadow 0.2s linear;-o-transition:border 0.2s linear,box-shadow 0.2s linear;}input[type="text"]:focus,input[type="password"]:focus,select:focus,textarea:focus {outline:none;border:1px solid #BBB;-webkit-box-shadow:0 0 6px rgba(0,0,0,0.4);-moz-box-shadow:0 0 6px rgba(0,0,0,0.4);box-shadow:0 0 6px rgba(0,0,0,0.4);}input[type="radio"],input[type="submit"]{font-size:108%;padding:4px 8px;-moz-border-radius:5px;-webkit-border-radius:5px;border-radius:5px;cursor:pointer;background-color:#EEE;background:-moz-linear-gradient(top,#FFF 0%,#DFDFDF 40%,#C3C3C3 100%);background:-webkit-gradient(linear, left top, left bottom, from(#FFF), to(#C3C3C3), color-stop(0.4, #DFDFDF));-moz-transition:-moz-box-shadow 0.3s linear;-webkit-transition:-webkit-box-shadow 0.3s linear;text-shadow:0px 1px 1px rgba(255,255,255,0.9);-webkit-box-shadow:0 2px 3px rgba(0,0,0,0.4);-moz-box-shadow:0 2px 3px rgba(0,0,0,0.4);box-shadow:0 2px 3px rgba(0,0,0,0.4);}input:hover[type="submit"]{background:#D0D0D0;color:#0D3247;background:-moz-linear-gradient(top,#FFF,#B0B0B0);background:-webkit-gradient(linear,left top,left bottom,from(#FFF), to(#B0B0B0));-webkit-box-shadow:0 2px 9px rgba(0,0,0,0.4);-moz-box-shadow:0 2px 9px rgba(0,0,0,0.4);box-shadow:0 2px 9px rgba(0,0,0,0.4);}input:active[type="submit"]{background:-webkit-gradient(linear,left top,left bottom,from(#B0B0B0), to(#EEE));background:-moz-linear-gradient(top,#B0B0B0,#EEE);-webkit-box-shadow:0 1px 5px rgba(0,0,0,0.8);-moz-box-shadow:0 1px 5px rgba(0,0,0,0.8);box-shadow:0 1px 5px rgba(0,0,0,0.8);}h1,h2{font-size:350%;padding:15px;text-shadow:0px 1px 2px rgba(0,0,0,0.4);}p{padding:10px 20px;}div{padding:10px 10px 10px 10px;}table{padding:5px 10px;width:100%;}th,td{padding:14px 6px;border-bottom:1px solid #F3F3F3;border-bottom:1px solid rgba(0,0,0,0.025);font-size:85%;}th{color:#666;font-size:108%;font-weight:normal;border:0;background-color:#E0E0E0;background:-moz-linear-gradient(top,rgba(243,243,243,0.5) 0%,rgba(208,208,208,0.9) 80%,rgba(207,207,207,0.9) 100%);background:-webkit-gradient(linear,left top,left bottom,from(rgba(243,243,243,0.5)),to(rgba(207,207,207,0.9)),color-stop(0.8, rgba(208,208,208,0.9)));text-shadow:0px 1px 1px rgba(255,255,255,0.9);}tr{background-color:rgba(255,255,255,0.1);}tr:hover{background-color:rgba(0,0,0,0.025);}div.block{padding:5px;text-align:right;font-size:108%;}.menu{background-color:#E3E3E3;background:-moz-linear-gradient(top,rgba(240,240,240,0.5) 0%,rgba(224,224,224,0.9) 60%,rgba(221,221,221,0.9) 100%);background:-webkit-gradient(linear,left top,left bottom,from(rgba(240,240,240,0.5)),to(rgba(221,221,221,0.9)),color-stop(0.6,rgba(224,224,224,0.9)));padding:0px;width:100%;height:37px;-moz-border-radius-topleft:5px;-moz-border-radius-topright:5px;-webkit-border-top-left-radius:5px;-webkit-border-top-right-radius:5px;border-top-left-radius:5px;border-top-right-radius:5px;}.menu ul{padding:10px 6px 0px 6px;}.menu ul li{display:inline;}.menu ul li a{text-shadow:0px 1px 1px rgba(255,255,255,0.9);float:left;display:block;color:#555;background-color:#D0D0D0;text-decoration:none;margin:0px 4px;padding:6px 18px;height:15px;-moz-border-radius-topleft:5px;-moz-border-radius-topright:5px;-webkit-border-top-left-radius:5px;-webkit-border-top-right-radius:5px;border-top-left-radius:5px;border-top-right-radius:5px;-moz-transition:background-color 0.2s linear;-webkit-transition:background-color 0.2s linear;-o-transition:background-color 0.2s linear;}.menu ul li a:hover,.menu ul li a.current{-webkit-box-shadow:0px -2px 3px rgba(0,0,0,0.07);-moz-box-shadow:0px -2px 3px rgba(0,0,0,0.07);box-shadow:0px -2px 3px rgba(0,0,0,0.07);}.menu ul li a:hover{background-color:#F0F0F0;color:#0D3247;}.menu ul li a:active{background-color:#FFF;color:#1B80BB;}.menu ul li a.current,.menu ul li a.current:hover{cursor:pointer;background-color:#FFF;}.pager{display:block;float:left;padding:2px 6px;border:1px solid #D0D0D0;margin-right:1px;background-color:rgba(255,255,255,0.1);-moz-border-radius:3px;-webkit-border-radius:3px;border-radius:3px;-moz-transition:border 0.2s linear;-webkit-transition:border 0.2s linear;-o-transition:border 0.2s linear;}a.pager:hover{border:1px solid #1B80BB;}</style>'},
 		columns => {
 			'integer' => {validate => 'INT', sortopts => 'NUM'},
@@ -438,9 +438,9 @@ sub render_as_form {
 	_before($self, \%args) if exists $args{before};	
 	my ($class, $form_action, $field_order, $output, $relationship_object);
 	my $table = $self->meta->table;
-	my $form_title = delete $args{title};
+	my $form_title = $args{title};
 	$class = ref $self || $self;
-	my $renderer_config = delete $args{renderer_config} || _renderer_config($class, $args{prepared});
+	my $renderer_config = $args{renderer_config} || _renderer_config($class, $args{prepared});
 	my ($ui_type) = (caller(0))[3] =~ /^.*_(\w+)$/;
 	my $form_config = _ui_config($ui_type, $renderer_config, \%args);
 	
@@ -470,8 +470,8 @@ sub render_as_form {
 	}
 
 	my $cancel = $form_config->{cancel};
-	my $template_url = delete $args{template_url} || $renderer_config->{template}->{url};
-	my $template_path = delete $args{template_path} || $renderer_config->{template}->{path};
+	my $template_url = $args{template_url} || $renderer_config->{template}->{url};
+	my $template_path = $args{template_path} || $renderer_config->{template}->{path};
 	(my $html_head = $args{html_head} || $renderer_config->{misc}->{html_head}) =~ s/\[%\s*title\s*%\]/$form_title/;
 
 	my $foreign_keys = _get_foreign_keys($class);
@@ -486,11 +486,11 @@ sub render_as_form {
 		$form_template = $args{template};
 	}
 
-	my $form_def = delete $args{form};
+	my $form_def = $args{form};
 	$form_def->{name} ||= $form_id;
 	$form_def->{enctype} ||= 'multipart/form-data';
 	$form_def->{method} ||= 'post';
-	$form_def->{params} ||= delete $args{query};
+	$form_def->{params} ||= $args{query};
 	$form_def->{stylesheet} = 1 unless exists $form_def->{stylesheet};
 
 	if($args{template}) {
@@ -790,18 +790,18 @@ sub render_as_table {
 	_before($self, \%args) if exists $args{before};
 	my ($table, @controllers, $output, $query_hidden_fields, $q, $sort_by_column);
 	my $class = $self->object_class();
-	my $query = delete $args{query} || CGI->new;
+	my $query = $args{query} || CGI->new;
 	my $url = $args{url} || $query->url(-absolute => 1);
-	my $renderer_config = delete $args{renderer_config} || _renderer_config($class, $args{prepared});
+	my $renderer_config = $args{renderer_config} || _renderer_config($class, $args{prepared});
 	my ($ui_type) = (caller(0))[3] =~ /^.*_(\w+)$/;
 	my $table_config = _ui_config($ui_type, $renderer_config, \%args);
 
 	my $table_id = _identify($class, $args{prefix}, $ui_type);
-	my $table_title = delete $args{title} || _label(_pluralise_table(_title($class->meta->table, $renderer_config->{db}->{table_prefix}), $renderer_config->{db}->{tables_are_singular}));
+	my $table_title = $args{title} || _label(_pluralise_table(_title($class->meta->table, $renderer_config->{db}->{table_prefix}), $renderer_config->{db}->{tables_are_singular}));
 
 	my $like_operator = $table_config->{like_operator} || ($class->meta->db->driver eq 'pg'?'ilike':'like');
-	my $template_url = delete $args{template_url} || $renderer_config->{template}->{url};
-	my $template_path = delete $args{template_path} || $renderer_config->{template}->{path};
+	my $template_url = $args{template_url} || $renderer_config->{template}->{url};
+	my $template_path = $args{template_path} || $renderer_config->{template}->{path};
 	(my $html_head = $args{html_head} || $renderer_config->{misc}->{html_head}) =~ s/\[%\s*title\s*%\]/$table_title/;
 
 	my $primary_key = $class->meta->primary_key_column_names->[0];
@@ -1386,14 +1386,14 @@ sub render_as_menu {
 	
 	my($menu, $hide_menu_param, $current_param, $output, $content, $item_order, $items, $current, $template);
 	my $class = $self->object_class();
-	my $renderer_config = delete $args{renderer_config} || _renderer_config($class, $args{prepared});
+	my $renderer_config = $args{renderer_config} || _renderer_config($class, $args{prepared});
 	my ($ui_type) = (caller(0))[3] =~ /^.*_(\w+)$/;
 	my $menu_config = _ui_config($ui_type, $renderer_config, \%args);
 	
 	my $menu_id = _identify($class, $args{prefix}, $ui_type);
-	my $menu_title = delete $args{title};
-	my $template_url = delete $args{template_url} || $renderer_config->{template}->{url};
-	my $template_path = delete $args{template_path} || $renderer_config->{template}->{path};
+	my $menu_title = $args{title};
+	my $template_url = $args{template_url} || $renderer_config->{template}->{url};
+	my $template_path = $args{template_path} || $renderer_config->{template}->{path};
 
 	if ($args{prefix}) {
 		$hide_menu_param = $menu_id.'_hide_menu';
@@ -1404,7 +1404,7 @@ sub render_as_menu {
 		$current_param = 'current';
 	}
 
-	my $query = delete $args{query} || CGI->new;
+	my $query = $args{query} || CGI->new;
 	my $url = $args{url} || $query->url(-absolute => 1);
 	my $query_string = join ('&amp;', map {"$_=$args{queries}->{$_}"} keys %{$args{queries}});
 	$query_string .= '&amp;' if $query_string;
@@ -1527,11 +1527,11 @@ sub render_as_chart {
 	my ($self, %args) = (@_);
 	_before($self, \%args) if exists $args{before};
 	my $class = $self->object_class();
-	my $renderer_config = delete $args{renderer_config} || _renderer_config($class, $args{prepared});
+	my $renderer_config = $args{renderer_config} || _renderer_config($class, $args{prepared});
 	
-	my $title = delete $args{title} || _label(_pluralise_table(_title($class->meta->table, $renderer_config->{db}->{table_prefix}), $renderer_config->{db}->{tables_are_singular}));
-	my $template_url = delete $args{template_url} || $renderer_config->{template}->{url};
-	my $template_path = delete $args{template_path} || $renderer_config->{template}->{path};
+	my $title = $args{title} || _label(_pluralise_table(_title($class->meta->table, $renderer_config->{db}->{table_prefix}), $renderer_config->{db}->{tables_are_singular}));
+	my $template_url = $args{template_url} || $renderer_config->{template}->{url};
+	my $template_path = $args{template_path} || $renderer_config->{template}->{path};
 	(my $html_head = $args{html_head} || $renderer_config->{misc}->{html_head}) =~ s/\[%\s*title\s*%\]/$title/;
 	my ($ui_type) = (caller(0))[3] =~ /^.*_(\w+)$/;
 	my $chart_id = _identify($class, $args{prefix}, $ui_type);
@@ -1544,7 +1544,7 @@ sub render_as_chart {
 		$hide_chart_param = 'hide_chart';
 	}
 
-	my $query = delete $args{query} || CGI->new;
+	my $query = $args{query} || CGI->new;
 	$args{hide_chart} ||= $query->param($hide_chart_param);
 
 	return $args{output}?{}:undef if $args{hide_chart};
@@ -1714,7 +1714,7 @@ sub _render_template {
 	}
 }
 
-#rdbo util
+# util
 
 sub _inherit_options {
 	my ($inherit_options, $args, $options) = @_;
@@ -2603,8 +2603,8 @@ The C<table> option defines the global default behaviours of C<render_as_table>:
       delimiter => '/',  # the delimiter for joining foreign objects in relationship columns, defaulted to ', '
       keyword_delimiter => '\s+',  # the delimiter for search keywords, defaulted to ','
       inherit_form_options => ['order', 'template'], # options to be inherit by other forms, defaulted to ['before', 'order', 'fields', 'template']
-      inherit_options => ['template_data', 'extra'], # options to be inherited by all forms with the table, defaulted to ['template_url', 'template_path', 'template_data', 'template_options', 'query']
-      like_operator => 'like', # only applicable to Postgres, defaulted to undef, i.e. Renderer uses 'ilike' for Postgres by default
+      inherit_options => ['template_data', 'extra'], # options to be inherited by all forms with the table, defaulted to ['template_url', 'template_path', 'template_data', 'template_options', 'query', 'renderer_config']
+      like_operator => 'like', # only applicable to Postgres, defaulted to undef, i.e. render_as_table() uses 'ilike' for Postgres by default
     },
   });
 
@@ -2617,7 +2617,7 @@ The C<menu> option defines the global default behaviours of C<render_as_menu>:
   $renderer->config({
     ...
     menu => {
-      inherit_options => ['template_data', 'extra'], # options to be inherited by all tables with the menu, defaulted to ['template_url', 'template_path', 'template_data', 'template_options', 'query']
+      inherit_options => ['template_data', 'extra'], # options to be inherited by all tables with the menu, defaulted to ['template_url', 'template_path', 'template_data', 'template_options', 'query', 'renderer_config']
       shortcuts => ['create', 'edit', 'searchable'] # shortcuts for options that can be set to true for all tables with the menu, defaulted to ['create', 'edit', 'copy', 'delete', 'ajax', 'prepared', 'searchable']
     },
   });
@@ -2663,7 +2663,7 @@ We can also define new column definitions:
     },
   });
 
-The options in each column definition are C<CGI::FormBuilder> field definitions, with the following additions:
+All options in each column definition are C<CGI::FormBuilder> field definitions, i.e. they are passed to L<CGI::FormBuilder> directly, except for:
 
 =over
 
@@ -2847,7 +2847,7 @@ A hashref to overwrite the variables passed to the template.
 
 =item C<query>
 
-CGI Query Object. This is needed in a persistent environment such as Fast CGI.
+Existing CGI query object. This is useful under a persistent environment, such as Fast CGI. Rendering methods initiates new CGI query objects unless an existing one has been provided.
 
 =item C<html_head>
 
