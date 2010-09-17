@@ -22,7 +22,7 @@ use Digest::MD5 ();
 use Scalar::Util ();
 
 our $VERSION = 0.74;
-# 231.61
+# 234.61
 
 sub _config {
 	my $config = {
@@ -30,8 +30,8 @@ sub _config {
 		template => {path => 'templates', url => 'templates', options => undef},
 		upload => {path => 'uploads', url => 'uploads', keep_old_files => undef},
 		form => {download_message => 'Download File', cancel => 'Cancel', delimiter => ','},
-		table => {search_result_title => 'Search Results for "[% q %]"', empty_message => 'No Record Found.', no_pagination => undef, per_page => 15, pages => 9, or_filter => undef, delimiter => ', ', keyword_delimiter => ',', inherit_options => ['template_url', 'template_path', 'template_options', 'query', 'renderer_config'], inherit_form_options => ['before', 'order', 'fields', 'template'], like_operator => undef},
-		menu => {shortcuts => ['create', 'edit', 'copy', 'delete', 'ajax', 'prepared', 'searchable'], inherit_options => ['template_url', 'template_path', 'template_options', 'query', 'renderer_config']},
+		table => {search_result_title => 'Search Results for "[% q %]"', empty_message => 'No Record Found.', no_pagination => undef, per_page => 15, pages => 9, or_filter => undef, delimiter => ', ', keyword_delimiter => ',', , like_operator => undef, cascade => ['template_url', 'template_path', 'template_options', 'query', 'renderer_config', 'prepared'], form_options => ['before', 'order', 'fields', 'template']},
+		menu => {cascade => ['create', 'edit', 'copy', 'delete', 'ajax', 'prepared', 'searchable', 'template_url', 'template_path', 'template_options', 'query', 'renderer_config']},
 		misc => {time_zone => 'Australia/Sydney', stringify_delimiter => ' ', doctype => '<!DOCTYPE HTML>', html_head => '<style type="text/css">body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td{margin:0;padding:0;}table{border-collapse:collapse;border-spacing:0;}fieldset,img{border:0;}address,caption,cite,code,dfn,em,strong,th,var{font-style:normal;font-weight:normal;}ol,ul{list-style:none;}caption,th{text-align:left;}h1,h2,h3,h4,h5,h6{font-size:100%;font-weight:normal;}q:before,q:after{content:\'\';}abbr,acronym{border:0;}body{font-size:93%;font-family:"Lucida Grande",Helvetica,Arial,Verdana,sans-serif;color:#222;}a,a:hover{color:#1B80BB;text-decoration:none;}a:hover{color:#0D3247;}a.button{white-space:nowrap;background-color:rgba(0,0,0,0.05);padding:5px 8px;-moz-border-radius:4px;-webkit-border-radius:4px;border-radius:4px;-moz-transition:background-color 0.2s linear;-webkit-transition:background-color 0.2s linear;-o-transition:background-color 0.2s linear;}a.button:hover{background-color:rgba(0,0,0,0.25);color:rgba(255,255,255,1);-webkit-box-shadow:0px 0px 3px rgba(0,0,0,0.1);-moz-box-shadow:0px 0px 3px rgba(0,0,0,0.1);box-shadow:0px 0px 3px rgba(0,0,0,0.1);}a.button:active{background-color:rgba(0,0,0,0.4);}a.delete{color:#BA1A1A;}p{padding:10px 20px;}form td{border:0px;text-align:left;}form tr:hover{background-color:rgba(255,255,255,0.1);}.fb_required{font-weight:bold;}.fb_error,.fb_invalid,.warning{color:#BA1A1A;}label{color:#333;}input,textarea,select{font-size:100%;font-family:"Lucida Grande",Helvetica,Arial,Verdana,sans-serif;color:#333;background-color:rgba(255,255,255,0.3);border:1px solid #DDD;margin:0px 5px;padding:4px 8px;-moz-border-radius:4px;-webkit-border-radius:4px;border-radius:4px;}input[type="text"],input[type="password"],select,textarea {-webkit-transition:border 0.2s linear,-webkit-box-shadow 0.2s linear;-moz-transition:border 0.2s linear,-moz-box-shadow 0.2s linear;-o-transition:border 0.2s linear,box-shadow 0.2s linear;}input[type="text"]:focus,input[type="password"]:focus,select:focus,textarea:focus {outline:none;border:1px solid #BBB;-webkit-box-shadow:0 0 6px rgba(0,0,0,0.4);-moz-box-shadow:0 0 6px rgba(0,0,0,0.4);box-shadow:0 0 6px rgba(0,0,0,0.4);}input[type="radio"],input[type="submit"]{font-size:108%;padding:4px 8px;-moz-border-radius:5px;-webkit-border-radius:5px;border-radius:5px;cursor:pointer;background-color:#EEE;background:-moz-linear-gradient(top,#FFF 0%,#DFDFDF 40%,#C3C3C3 100%);background:-webkit-gradient(linear, left top, left bottom, from(#FFF), to(#C3C3C3), color-stop(0.4, #DFDFDF));-moz-transition:-moz-box-shadow 0.3s linear;-webkit-transition:-webkit-box-shadow 0.3s linear;text-shadow:0px 1px 1px rgba(255,255,255,0.9);-webkit-box-shadow:0 2px 3px rgba(0,0,0,0.4);-moz-box-shadow:0 2px 3px rgba(0,0,0,0.4);box-shadow:0 2px 3px rgba(0,0,0,0.4);}input:hover[type="submit"]{background:#D0D0D0;color:#0D3247;background:-moz-linear-gradient(top,#FFF,#B0B0B0);background:-webkit-gradient(linear,left top,left bottom,from(#FFF), to(#B0B0B0));-webkit-box-shadow:0 2px 9px rgba(0,0,0,0.4);-moz-box-shadow:0 2px 9px rgba(0,0,0,0.4);box-shadow:0 2px 9px rgba(0,0,0,0.4);}input:active[type="submit"]{background:-webkit-gradient(linear,left top,left bottom,from(#B0B0B0), to(#EEE));background:-moz-linear-gradient(top,#B0B0B0,#EEE);-webkit-box-shadow:0 1px 5px rgba(0,0,0,0.8);-moz-box-shadow:0 1px 5px rgba(0,0,0,0.8);box-shadow:0 1px 5px rgba(0,0,0,0.8);}h1,h2{font-size:350%;padding:15px;text-shadow:0px 1px 2px rgba(0,0,0,0.4);}p{padding:10px 20px;}div{padding:10px 10px 10px 10px;}table{padding:5px 10px;width:100%;}th,td{padding:14px 6px;border-bottom:1px solid #F3F3F3;border-bottom:1px solid rgba(0,0,0,0.025);font-size:85%;}th{color:#666;font-size:108%;font-weight:normal;border:0;background-color:#E0E0E0;background:-moz-linear-gradient(top,rgba(243,243,243,0.5) 0%,rgba(208,208,208,0.9) 80%,rgba(207,207,207,0.9) 100%);background:-webkit-gradient(linear,left top,left bottom,from(rgba(243,243,243,0.5)),to(rgba(207,207,207,0.9)),color-stop(0.8, rgba(208,208,208,0.9)));text-shadow:0px 1px 1px rgba(255,255,255,0.9);}tr{background-color:rgba(255,255,255,0.1);}tr:hover{background-color:rgba(0,0,0,0.025);}div.block{padding:5px;text-align:right;font-size:108%;}.menu{background-color:#E3E3E3;background:-moz-linear-gradient(top,rgba(240,240,240,0.5) 0%,rgba(224,224,224,0.9) 60%,rgba(221,221,221,0.9) 100%);background:-webkit-gradient(linear,left top,left bottom,from(rgba(240,240,240,0.5)),to(rgba(221,221,221,0.9)),color-stop(0.6,rgba(224,224,224,0.9)));padding:0px;width:100%;height:37px;-moz-border-radius-topleft:5px;-moz-border-radius-topright:5px;-webkit-border-top-left-radius:5px;-webkit-border-top-right-radius:5px;border-top-left-radius:5px;border-top-right-radius:5px;}.menu ul{padding:10px 6px 0px 6px;}.menu ul li{display:inline;}.menu ul li a{text-shadow:0px 1px 1px rgba(255,255,255,0.9);float:left;display:block;color:#555;background-color:#D0D0D0;text-decoration:none;margin:0px 4px;padding:6px 18px;height:15px;-moz-border-radius-topleft:5px;-moz-border-radius-topright:5px;-webkit-border-top-left-radius:5px;-webkit-border-top-right-radius:5px;border-top-left-radius:5px;border-top-right-radius:5px;-moz-transition:background-color 0.2s linear;-webkit-transition:background-color 0.2s linear;-o-transition:background-color 0.2s linear;}.menu ul li a:hover,.menu ul li a.current{-webkit-box-shadow:0px -2px 3px rgba(0,0,0,0.07);-moz-box-shadow:0px -2px 3px rgba(0,0,0,0.07);box-shadow:0px -2px 3px rgba(0,0,0,0.07);}.menu ul li a:hover{background-color:#F0F0F0;color:#0D3247;}.menu ul li a:active{background-color:#FFF;color:#1B80BB;}.menu ul li a.current,.menu ul li a.current:hover{cursor:pointer;background-color:#FFF;}.pager{display:block;float:left;padding:2px 6px;border:1px solid #D0D0D0;margin-right:1px;background-color:rgba(255,255,255,0.1);-moz-border-radius:3px;-webkit-border-radius:3px;border-radius:3px;-moz-transition:border 0.2s linear;-webkit-transition:border 0.2s linear;-o-transition:border 0.2s linear;}a.pager:hover{border:1px solid #1B80BB;}</style>'},
 		columns => {
 			'integer' => {validate => 'INT', sortopts => 'NUM'},
@@ -440,7 +440,7 @@ sub render_as_form {
 	my $table = $self->meta->table;
 	my $form_title = $args{title};
 	$class = ref $self || $self;
-	my $renderer_config = $args{renderer_config} || _renderer_config($class, $args{prepared});
+	my $renderer_config = _prepare($class, $args{renderer_config}, $args{prepared});
 	my ($ui_type) = (caller(0))[3] =~ /^.*_(\w+)$/;
 	my $form_config = _ui_config($ui_type, $renderer_config, \%args);
 	
@@ -792,7 +792,7 @@ sub render_as_table {
 	my $class = $self->object_class();
 	my $query = $args{query} || CGI->new;
 	my $url = $args{url} || $query->url(-absolute => 1);
-	my $renderer_config = $args{renderer_config} || _renderer_config($class, $args{prepared});
+	my $renderer_config = _prepare($class, $args{renderer_config}, $args{prepared});
 	my ($ui_type) = (caller(0))[3] =~ /^.*_(\w+)$/;
 	my $table_config = _ui_config($ui_type, $renderer_config, \%args);
 
@@ -997,9 +997,9 @@ sub render_as_table {
 				$args{$action}->{no_head} = $args{no_head} if exists $args{no_head} && ! exists $args{$action}->{no_head};
 				$args{$action}->{prepared} = $args{prepared} if exists $args{prepared} && ! exists $args{$action}->{prepared};
 				
-				_inherit_options($table_config->{inherit_options}, \%args, $args{$action});
+				_cascade($table_config->{cascade}, \%args, $args{$action});
 				
-				foreach my $option (@{$table_config->{inherit_form_options}}) {
+				foreach my $option (@{$table_config->{form_options}}) {
 					_inherit_form_option($option, $action, \%args);
 				}
 								
@@ -1386,7 +1386,7 @@ sub render_as_menu {
 	
 	my($menu, $hide_menu_param, $current_param, $output, $content, $item_order, $items, $current, $template);
 	my $class = $self->object_class();
-	my $renderer_config = $args{renderer_config} || _renderer_config($class, $args{prepared});
+	my $renderer_config = _prepare($class, $args{renderer_config}, $args{prepared});
 	my ($ui_type) = (caller(0))[3] =~ /^.*_(\w+)$/;
 	my $menu_config = _ui_config($ui_type, $renderer_config, \%args);
 	
@@ -1463,7 +1463,7 @@ sub render_as_menu {
 				}
 			}
 			
-			_inherit_options($menu_config->{inherit_options}, \%args, $options);
+			_cascade($menu_config->{cascade}, \%args, $options);
 			
 			foreach my $shortcut (@{$menu_config->{shortcuts}}) {
 				$options->{$shortcut} = 1 if $args{$shortcut} && ! exists $options->{$shortcut};
@@ -1527,7 +1527,7 @@ sub render_as_chart {
 	my ($self, %args) = (@_);
 	_before($self, \%args) if exists $args{before};
 	my $class = $self->object_class();
-	my $renderer_config = $args{renderer_config} || _renderer_config($class, $args{prepared});
+	my $renderer_config = _prepare($class, $args{renderer_config}, $args{prepared});
 	
 	my $title = $args{title} || _label(_pluralise_table(_title($class->meta->table, $renderer_config->{db}->{table_prefix}), $renderer_config->{db}->{tables_are_singular}));
 	my $template_url = $args{template_url} || $renderer_config->{template}->{url};
@@ -1716,10 +1716,10 @@ sub _render_template {
 
 # util
 
-sub _inherit_options {
-	my ($inherit_options, $args, $options) = @_;
-	foreach my $inherit_option (@{$inherit_options}) {
-		$options->{$inherit_option} = $args->{$inherit_option} if $args->{$inherit_option} && ! exists $options->{$inherit_option};
+sub _cascade {
+	my ($cascade, $args, $options) = @_;
+	foreach my $option (@{$cascade}) {
+		$options->{$option} = $args->{$option} if defined $args->{$option} && ! defined $options->{$option};
 	}
 }
 
@@ -1737,10 +1737,10 @@ sub _ui_config {
 	return $ui_config;
 }
 
-sub _renderer_config {
-	my ($class, $prepared) = @_;
-	return _get_renderer_config($class) if $prepared || $class->can('renderer_config');
-	return $class->prepare_renderer();
+sub _prepare {
+	my ($class, $config, $prepared) = @_;
+	return $class->prepare_renderer($config) unless $prepared || $class->can('renderer_config');
+	return $config || $class->renderer_config();
 }
 
 sub _get_renderer_config {
@@ -2602,9 +2602,9 @@ The C<table> option defines the global default behaviours of C<render_as_table>:
       or_filter => 1,  # column filtering is joined by 'OR', defaulted to undef
       delimiter => '/',  # the delimiter for joining foreign objects in relationship columns, defaulted to ', '
       keyword_delimiter => '\s+',  # the delimiter for search keywords, defaulted to ','
-      inherit_form_options => ['order', 'template'], # options to be inherit by other forms, defaulted to ['before', 'order', 'fields', 'template']
-      inherit_options => ['template_data', 'extra'], # options to be inherited by all forms with the table, defaulted to ['template_url', 'template_path', 'template_data', 'template_options', 'query', 'renderer_config']
       like_operator => 'like', # only applicable to Postgres, defaulted to undef, i.e. render_as_table() uses 'ilike' for Postgres by default
+      form_options => ['order', 'template'], # options to be shared by other forms, defaulted to ['before', 'order', 'fields', 'template']
+      cascade => ['template_data', 'extra'], # options to be cascaded into all forms, defaulted to ['template_url', 'template_path', 'template_options', 'query', 'renderer_config', 'prepared']
     },
   });
 
@@ -2617,8 +2617,7 @@ The C<menu> option defines the global default behaviours of C<render_as_menu>:
   $renderer->config({
     ...
     menu => {
-      inherit_options => ['template_data', 'extra'], # options to be inherited by all tables with the menu, defaulted to ['template_url', 'template_path', 'template_data', 'template_options', 'query', 'renderer_config']
-      shortcuts => ['create', 'edit', 'searchable'] # shortcuts for options that can be set to true for all tables with the menu, defaulted to ['create', 'edit', 'copy', 'delete', 'ajax', 'prepared', 'searchable']
+      cascade => ['template_data', 'extra'], # options to be cascaded into all tables, defaulted to ['create', 'edit', 'copy', 'delete', 'ajax', 'prepared', 'searchable', 'template_url', 'template_path', 'template_options', 'query', 'renderer_config']
     },
   });
 
@@ -3207,12 +3206,12 @@ When set to 1, C<delete> enables the built-in 'delete' controller for removing o
 
 Similar to the C<queries> parameter in C<render_as_form>, C<queries> is an arrayref of query parameters, which will be converted to query strings. Please note that when a prefix is used, all query strings are renamed to 'C<prefix_querystring>'.
 
-=item C<inherit_form_options>
+=item C<form_options>
 
-An arrayref that controls what form options can be inherited from other forms. The default inheritable options, defined in C<config()>, are C<before>, C<order>, C<fields>, and C<template>.
+An arrayref of form options that can be inherited by other forms.
   
   Company::Employee::Manager->render_as_table(
-    inherit_form_options => ['order', 'template'],
+    form_options => ['order', 'template'],
     order => ['photo', 'first_name', 'last_name', 'email'],
     create => {
       before => sub {
@@ -3226,7 +3225,7 @@ An arrayref that controls what form options can be inherited from other forms. T
     copy => 1,
   );
 
-In the above example, both the form for 'edit' and 'copy' will use (inherit) the exact same field order and TT template as the form for 'create', despite the fact that none of those options are defined directly. However, the 'before' callback will not be triggered in the 'edit' or 'copy' form since the C<inherit_form_options> parameter prevents that option being inherited.
+In the above example, both the form for 'edit' and 'copy' will share the exact same field order and TT template with the form for 'create', despite the fact that none of those options are defined directly. However, the 'before' callback will not be triggered in the 'edit' or 'copy' form since the C<form_options> parameter prevents that option being inherited.
 
 =item C<url>
 

@@ -1,10 +1,10 @@
 Revision history for Rose-DBx-Object-Renderer
 
-0.74    16/09/2010
+0.74    17/09/2010
         Updated default CSS.
         Fixed a bug related to hiding the output of render_as_table() via query param.
         Fixed the logic for checking if the auto generated Rose object base class is loaded already.
-        Added the 'searchable => 1' option to render_as_table(), and render_as_menu().
+        Added the 'searchable => 1' support to render_as_table(), and render_as_menu().
         Improved 'class_prefix' generation for SQLite.
         Fixed a bug in render_as_table() when including non-character based columns from SQLite in keyword searches.
         Updated the column definitions for 'date', 'datetime' to allow editing and searching in YYYY-MM-DD.
@@ -13,10 +13,10 @@ Revision history for Rose-DBx-Object-Renderer
         Minor UI updates to render_as_table() and to the default 'table.tt'.
         Relaxed the default validation regular expression in the 'image' column definition.
         Added the 'template_options' option to render_as_form() and allowed global template options in the default config.
-        Added the 'inherit_options' option to 'table' in the default config.
-        Added the 'inherit_options' and 'shortcuts' options to the new 'menu' option in the default config.
+        Added the 'cascade' option to 'table' and 'menu' option into the default config.
         Added the alias 'web' to the 'url' column definition.
-        Add the 'query' parameter (previously named 'cgi') officially to all rendering methods to specify the CGI query object.
+        Add the 'query' parameter to all rendering methods to specify the CGI query object.
+        RENAMED the 'inherit_form_options' option (introduced in 0.68) to 'form_options' in the default config. 
         Code refactoring.
         Updated POD.
 0.73    13/07/2010
@@ -48,7 +48,7 @@ Revision history for Rose-DBx-Object-Renderer
         Updated the column definitions for 'text', 'phone', 'fax', 'mobile', 'float', and 'email'.
         Improved support for the 'other' form field option in render_as_form().
         Added the 'before' callback to all rendering methods.
-        Added the 'inherit_form_options' option to the default config() hash and to render_as_table(), allowing a form to inherit options from another inside render_as_table().
+        Added the 'inherit_form_options' option to the default config() hash and to render_as_table(), allowing a form to inherit options from other forms inside render_as_table().
         Improved title generation in render_as_form() and render_as_table().
         Updated the default CSS.
         Updated POD.
