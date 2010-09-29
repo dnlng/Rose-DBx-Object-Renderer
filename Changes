@@ -1,6 +1,6 @@
 Revision history for Rose-DBx-Object-Renderer
 
-0.74    17/09/2010
+0.74    29/09/2010
         Updated default CSS.
         Fixed a bug related to hiding the output of render_as_table() via query param.
         Fixed the logic for checking if the auto generated Rose object base class is loaded already.
@@ -17,6 +17,7 @@ Revision history for Rose-DBx-Object-Renderer
         Added the alias 'web' to the 'url' column definition.
         Add the 'query' parameter to all rendering methods to specify the CGI query object.
         RENAMED the 'inherit_form_options' option (introduced in 0.68) to 'form_options' in the default config. 
+        Added the 'preload="none"' HTML5 attriube to the 'audio' and 'video' for view methods.
         Code refactoring.
         Updated POD.
 0.73    13/07/2010

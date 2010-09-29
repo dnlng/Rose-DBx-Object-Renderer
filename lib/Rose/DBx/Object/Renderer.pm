@@ -22,7 +22,7 @@ use Digest::MD5 ();
 use Scalar::Util ();
 
 our $VERSION = 0.74;
-# 234.61
+# 235.61
 
 sub _config {
 	my $config = {
@@ -2190,7 +2190,7 @@ sub _view_video {
 	my $url = _get_file_url($self, $column);
 	return unless $url;
 	my $label = _label($column) . ' File';
-	return qq(<video src="$url" controls="controls"><a href="$url">$label</a></video>);
+	return qq(<video src="$url" controls="controls" preload="none"><a href="$url">$label</a></video>);
 }
 
 sub _view_audio {
@@ -2198,7 +2198,7 @@ sub _view_audio {
 	my $url = _get_file_url($self, $column);
 	return unless $url;
 	my $label = _label($column) . ' File';
-	return qq(<audio src="$url" controls="controls"><a href="$url">$label</a></audio>);
+	return qq(<audio src="$url" controls="controls" preload="none"><a href="$url">$label</a></audio>);
 }
 
 sub _view_address  {
