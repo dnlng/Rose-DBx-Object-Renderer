@@ -22,7 +22,7 @@ use Digest::MD5 ();
 use Scalar::Util ();
 
 our $VERSION = 0.74;
-# 235.61
+# 236.61
 
 sub _config {
 	my $config = {
@@ -234,7 +234,7 @@ sub _process_columns {
 					} unless exists $config->{columns}->{$column}->{format} && exists $config->{columns}->{$column}->{format}->{for_view};
 				}
 			}
-			elsif (exists $foreign_keys->{$column}) { # special treatment
+			elsif (exists $foreign_keys->{$column}) {
 				my $foreign_object_name = $foreign_keys->{$column}->{name};
 				$config->{columns}->{$column} = {
 					label => _label(_title($foreign_object_name, $config->{db}->{table_prefix})), 
@@ -252,7 +252,7 @@ sub _process_columns {
 			}
 			else {
 				DEF: foreach my $column_key (@{$sorted_column_definition_keys}) {
-					if ($column =~ /$column_key/ && ! exists $custom_definitions->{$column_key}) { # first match
+					if ($column =~ /$column_key/ && ! exists $custom_definitions->{$column_key}) {
 						$column_type = $column_key;
 						last DEF;
 					}
@@ -372,7 +372,8 @@ sub _process_columns {
 					}
 				}
 			}
-			elsif (exists $validated_unique_keys->{$column_type} && $column ne $column_type) { # prevent inheriting validation subref from matching unique column type
+			elsif (exists $validated_unique_keys->{$column_type} && $column ne $column_type) {
+				# prevent inheriting validation subref from matching unique column type
 				foreach my $key (keys %{$config->{columns}->{$column_type}}) {
 					$config->{columns}->{$column}->{$key} = $config->{columns}->{$column_type}->{$key};
 				}
@@ -507,7 +508,7 @@ sub render_as_form {
 	foreach my $column (@{$column_order}) {
 		my $field_def;
 		$field_def = $args{fields}->{$column} if exists $args{fields} && exists $args{fields}->{$column};
-
+				
 		my $column_definition_method = $column . '_definition';
 		if ($class->can($column_definition_method)) {
 			my $column_definition = $class->$column_definition_method;
@@ -515,8 +516,9 @@ sub render_as_form {
 				$field_def->{$property} = $column_definition->{$property} unless defined $field_def->{$property} || $property eq 'format'  || $property eq 'stringify' || $property eq 'unsortable';
 			}
 		}
-
-		if (exists $relationships->{$column}) { # one to many or many to many relationships
+		
+		if (exists $relationships->{$column}) {
+			# one to many or many to many relationships
 			$field_def->{validate} ||= 'INT';
 			$field_def->{sortopts} ||= 'LABELNAME';
 			$field_def->{multiple} ||= 1;
@@ -528,7 +530,7 @@ sub render_as_form {
 
 			 	foreach my $foreign_object ($self->$column) {
 					$foreign_object_value->{$foreign_object->$foreign_class_primary_key} = $foreign_object->stringify_me(prepared => $args{prepared});
-					$relationship_object->{$column}->{$foreign_object->$foreign_class_primary_key} = undef; #keep it for update
+					$relationship_object->{$column}->{$foreign_object->$foreign_class_primary_key} = undef; # keep it for update
 				}
 				$field_def->{value} = $foreign_object_value;
 			}
@@ -546,9 +548,13 @@ sub render_as_form {
 				}
 			}
 		}
-		elsif (exists $class->meta->{columns}->{$column}) { #normal column
+		elsif (exists $class->meta->{columns}->{$column}) {
+			# normal column
+			$field_def->{required} = 1 if ! defined $field_def->{required} && $class->meta->{columns}->{$column}->{not_null};
+			
 			unless (exists $field_def->{options} || $field_def->{type} eq 'hidden') {
-				if (exists $foreign_keys->{$column}) { #create or edit
+				if (exists $foreign_keys->{$column}) {
+					# create or edit
 					my $foreign_class = $foreign_keys->{$column}->{class};
 					my $foreign_class_primary_key = $foreign_class->meta->primary_key_column_names->[0];
 					if ($field_def->{static}) {
@@ -597,7 +603,8 @@ sub render_as_form {
 				}
 			}
 
-			if (ref $self) { #edit
+			if (ref $self) {
+				# edit
 				unless (exists $field_def->{value}) {
 					my $current_value;
 					if ($class->can($column . '_for_edit')) {
@@ -629,7 +636,8 @@ sub render_as_form {
 									$field_def->{options}->{$field_def->{value}} = $field_def->{value} unless exists $field_def->{options}->{$field_def->{value}};
 								}
 							}
-							else { # must be array 
+							else {
+								# must be array
 								my $available_options;
 								foreach my $option (@{$field_def->{options}}) {
 									$available_options->{$option} = undef;
@@ -648,7 +656,8 @@ sub render_as_form {
 					}
 				}
 
-				if ($field_def->{type} eq 'file') { #file: if value exist in db, or in cgi param when the same form reloads
+				if ($field_def->{type} eq 'file') {
+					# file: if value exist in db, or in cgi param when the same form reloads
 					delete $field_def->{value};
 					unless (exists $field_def->{comment}) {
 						my $value = $form->cgi_param($form_id.'_'.$column) || $form->cgi_param($column) || $self->$column;
@@ -734,7 +743,8 @@ sub render_as_form {
 			if ($form_validate) {
 				no strict 'refs';
 				my $form_action_callback = '_'.$form_action.'_object';
-				if (exists $args{controllers}->{$form->submitted}) { #method buttons
+				if (exists $args{controllers}->{$form->submitted}) {
+					# method buttons
 					if (ref $args{controllers}->{$form->submitted} eq 'HASH') {
 						if ($args{controllers}->{$form->submitted}->{$form_action}) {
 							unless (ref $args{controllers}->{$form->submitted}->{$form_action} eq 'CODE' && ! $args{controllers}->{$form->submitted}->{$form_action}->($self)) {
@@ -984,7 +994,7 @@ sub render_as_table {
 		$objects = $self->get_objects(%{$args{get}});
 		$output->{objects} = $objects;
 
-		##Handle Submission
+		## Handle Submission
 		my $reload_object;
 		if ($query->param($param_list->{action})) {
 			my $valid_form_actions = {create => undef, edit => undef, copy => undef};
@@ -1078,7 +1088,7 @@ sub render_as_table {
 	}
 
 
-	##Render Table
+	## Render Table
 
 	$args{hide_table} = 1 if $query->param($param_list->{'hide_table'});
 	unless ($args{hide_table}) {
@@ -1114,7 +1124,7 @@ sub render_as_table {
 			$query_string->{exclusive} .= $param_list->{page}.'='.$args{get}->{page}.'&amp;';
 		}
 
-		##Define Table
+		## Define Table
 
 		if ($args{create}) {
 			my $create_value = 'Create';
@@ -1168,10 +1178,10 @@ sub render_as_table {
 			my $object_id = $object->$primary_key;
 			foreach my $column (@{$column_order}) {
 				my $value;
-				if(exists $args{columns} && exists $args{columns}->{$column} && exists $args{columns}->{$column}->{value}) { #custom column value
+				if(exists $args{columns} && exists $args{columns}->{$column} && exists $args{columns}->{$column}->{value}) {
 					$value = $args{columns}->{$column}->{value}->{$object_id} if exists $args{columns}->{$column}->{value}->{$object_id};
 				}
-				elsif(exists $args{columns} && exists $args{columns}->{$column} && exists $args{columns}->{$column}->{accessor}) { #custom column accessor
+				elsif(exists $args{columns} && exists $args{columns}->{$column} && exists $args{columns}->{$column}->{accessor}) {
 					my $accessor = $args{columns}->{$column}->{accessor};
 					$value = $object->$accessor($column) if $object->can($accessor);
 				}
@@ -1812,10 +1822,10 @@ sub _update_object {
 			$field_value = join _get_renderer_config($self)->{form}->{delimiter}, @values;
 		}
 		else {
-			$field_value = $form->field($field); #if this line is removed, $form->field function will still think it should return an array, which will fail for file upload
+			$field_value = $form->field($field); # if this line is removed, $form->field function will still think it should return an array, which will fail for file upload
 		}
 
-		if (exists $relationships->{$column}) { #one to many or many to many
+		if (exists $relationships->{$column}) {
 			my $foreign_class = $relationships->{$column}->{class};
 			my $foreign_class_foreign_keys = _get_foreign_keys($foreign_class);
 			my $foreign_key;
@@ -1829,7 +1839,8 @@ sub _update_object {
 
 			my $default = undef;
 			$default = $relationships->{$column}->{class}->meta->{columns}->{$table.'_id'}->{default} if defined $relationships->{$column}->{class}->meta->{columns}->{$table.'_id'}->{default};
-			if(length($form->cgi_param($field))) { # $form->field($field) won't work 
+			 # $form->field($field) won't work
+			if(length($form->cgi_param($field))) {
 				my ($new_foreign_object_id, $old_foreign_object_id, $value_hash, $new_foreign_object_id_hash);
 				my $foreign_class_primary_key = $relationships->{$column}->{class}->meta->primary_key_column_names->[0];
 
@@ -1847,7 +1858,8 @@ sub _update_object {
 					Rose::DB::Object::Manager->update_objects(object_class => $foreign_class, set => {$foreign_key => $default}, where => [or => $old_foreign_object_id]) if $old_foreign_object_id;
 					Rose::DB::Object::Manager->update_objects(object_class => $foreign_class, set => {$foreign_key => $self->$primary_key}, where => [or => $new_foreign_object_id]) if $new_foreign_object_id;
 				}
-				else { #many to many
+				else {
+					 # many to many
 					$self->$column(@{$new_foreign_object_id_hash});
 				}
 			}
@@ -1855,7 +1867,8 @@ sub _update_object {
 				if ($relationships->{$column}->{type} eq 'one to many') {
 					Rose::DB::Object::Manager->update_objects(object_class => $foreign_class, set => {$foreign_key => $default}, where => [$foreign_key => $self->$primary_key]);
 				}
-				else { #many to many
+				else {
+					# many to many
 					$self->$column([]); # cascade deletes foreign objects
 				}
 			}
@@ -1894,8 +1907,8 @@ sub _create_object {
 			my $column = $field;
 			$column =~ s/$form_id\_// if $prefix;
 			my @values = $form->field($field);
-
-			if (exists $relationships->{$column}) { #one to many or many to many
+			 # one to many or many to many
+			if (exists $relationships->{$column}) {
 				my $new_foreign_object_id_hash;
 				my $foreign_class_primary_key = $relationships->{$column}->{class}->meta->primary_key_column_names->[0];
 
@@ -1912,11 +1925,11 @@ sub _create_object {
 					$field_value = join _get_renderer_config($self)->{form}->{delimiter}, @values;
 				}
 				else {
-					$field_value = $form->field($field); #if this line is removed, $form->field function will still think it should return an array, which will fail for file upload
+					$field_value = $form->field($field); # if this line is removed, $form->field function will still think it should return an array, which will fail for file upload
 				}
 
 				if ($class->can($column . '_for_update')) {
-					$custom_field_value->{$column . '_for_update'} = $field_value; #save it for later
+					$custom_field_value->{$column . '_for_update'} = $field_value; # save it for later
 					$self->$column('0') if $self->meta->{columns}->{$column}->{not_null}; # zero fill not null columns
 				}
 				elsif ($class->can($column)) {
@@ -1928,7 +1941,7 @@ sub _create_object {
 
 	$self->save;
 
-	#after save, run formatting methods, which may require an id, such as file upload
+	# after save, run formatting methods, which may require an id, such as file upload
 	if ($custom_field_value) {
 		foreach my $update_method (keys %{$custom_field_value}) {
 			$self->$update_method($custom_field_value->{$update_method});
@@ -2004,7 +2017,8 @@ sub stringify_me {
 	my @values;
 	foreach my $column (sort {$a->ordinal_position <=> $b->ordinal_position} @{$self->meta->columns}) {
 		my $column_definition_method = $column . '_definition';
-		if ($self->can($column_definition_method) && $self->$column_definition_method->{stringify}) { # filter primary keys and custom coded columns
+		# filter primary keys and custom coded columns
+		if ($self->can($column_definition_method) && $self->$column_definition_method->{stringify}) {
 			my $for_view_method = $column . '_for_view';
 			if ($self->can($for_view_method)) {
 				push @values, $self->$for_view_method;
@@ -2116,7 +2130,7 @@ sub _update_file {
 	$old_file = File::Spec->catfile($upload_path, $current_file) if $current_file;
 	my $new_file = File::Spec->catfile($upload_path, $file_name);
 
-	if ($old_file eq $new_file && -e $old_file) { # same file name
+	if ($old_file eq $new_file && -e $old_file) {
 		my $counter = 1;
 		my $backup_file = File::Spec->catfile($upload_path, $actual_name.'-'.$counter.'.'.$extension);
 		while (-e $backup_file) {
@@ -2267,7 +2281,7 @@ sub _search_percentage {
 	return $value/100;
 }
 
-#misc util
+# misc util
 
 sub _inherit_form_option {
 	my ($option, $action, $args) = @_;
