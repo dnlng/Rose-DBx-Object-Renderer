@@ -22,7 +22,7 @@ use Digest::MD5 ();
 use Scalar::Util ();
 
 our $VERSION = 0.74;
-# 236.61
+# 237.61
 
 sub _config {
 	my $config = {
@@ -2087,7 +2087,7 @@ sub _edit_time {
 
 sub _update_date {
 	my ($self, $column, $value) = @_;
-	return unless $value;
+	return $self->$column(undef) unless $value;
 	my ($d, $m, $y) = split /\/|\-/, $value;
 	if ($d =~ /^\d{4}$/) { 
 		my $temp_d = $d;
@@ -2102,7 +2102,7 @@ sub _update_date {
 
 sub _udpate_time {
 	my ($self, $column, $value) = @_;
-	return unless $value;
+	return $self->$column(undef) unless $value;
 	my ($h, $m) = split ':', $value;
 	my $t;
 	eval {$t = Time::Clock->new(hour => $h, minute => $m)};

@@ -1,9 +1,10 @@
 Revision history for Rose-DBx-Object-Renderer
 
-0.74    29/09/2010
+0.74    28/10/2010
         Updated default CSS.
         Fixed a bug related to hiding the output of render_as_table() via query param.
         Fixed the logic for checking if the auto generated Rose object base class is loaded already.
+        Fixed a bug where the 'time' and 'date' column values cannot be emptied in render_as_form().
         Added the 'searchable => 1' support to render_as_table(), and render_as_menu().
         Improved 'class_prefix' generation for SQLite.
         Fixed a bug in render_as_table() when including non-character based columns from SQLite in keyword searches.
