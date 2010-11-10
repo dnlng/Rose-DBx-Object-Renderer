@@ -1,6 +1,6 @@
 Revision history for Rose-DBx-Object-Renderer
 
-0.74    28/10/2010
+0.74    10/11/2010
         Updated default CSS.
         Fixed a bug related to hiding the output of render_as_table() via query param.
         Fixed the logic for checking if the auto generated Rose object base class is loaded already.
@@ -19,6 +19,8 @@ Revision history for Rose-DBx-Object-Renderer
         Add the 'query' parameter to all rendering methods to specify the CGI query object.
         RENAMED the 'inherit_form_options' option (introduced in 0.68) to 'form_options' in the default config. 
         Added the 'preload="none"' HTML5 attriube to the 'audio' and 'video' for view methods.
+        Added the ability to remove uploaded files in render_as_form().
+        Added the 'remove_files' option to the default config() hash. Added the 'remove' formatting method to file type columns.
         Code refactoring.
         Updated POD.
 0.73    13/07/2010

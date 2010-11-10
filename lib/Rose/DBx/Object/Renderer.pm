@@ -22,14 +22,14 @@ use Digest::MD5 ();
 use Scalar::Util ();
 
 our $VERSION = 0.74;
-# 237.61
+# 239.62
 
 sub _config {
 	my $config = {
 		db => {name => undef, type => 'mysql', host => '127.0.0.1', port => undef, username => 'root', password => 'root', tables_are_singular => undef, table_prefix => undef, new_or_cached => 1, check_class => undef},
 		template => {path => 'templates', url => 'templates', options => undef},
 		upload => {path => 'uploads', url => 'uploads', keep_old_files => undef},
-		form => {download_message => 'Download File', cancel => 'Cancel', delimiter => ','},
+		form => {download_message => 'View', remove_message => 'Remove', remove_files => undef, cancel => 'Cancel', delimiter => ','},
 		table => {search_result_title => 'Search Results for "[% q %]"', empty_message => 'No Record Found.', no_pagination => undef, per_page => 15, pages => 9, or_filter => undef, delimiter => ', ', keyword_delimiter => ',', , like_operator => undef, cascade => ['template_url', 'template_path', 'template_options', 'query', 'renderer_config', 'prepared'], form_options => ['before', 'order', 'fields', 'template']},
 		menu => {cascade => ['create', 'edit', 'copy', 'delete', 'ajax', 'prepared', 'searchable', 'template_url', 'template_path', 'template_options', 'query', 'renderer_config']},
 		misc => {time_zone => 'Australia/Sydney', stringify_delimiter => ' ', doctype => '<!DOCTYPE HTML>', html_head => '<style type="text/css">body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td{margin:0;padding:0;}table{border-collapse:collapse;border-spacing:0;}fieldset,img{border:0;}address,caption,cite,code,dfn,em,strong,th,var{font-style:normal;font-weight:normal;}ol,ul{list-style:none;}caption,th{text-align:left;}h1,h2,h3,h4,h5,h6{font-size:100%;font-weight:normal;}q:before,q:after{content:\'\';}abbr,acronym{border:0;}body{font-size:93%;font-family:"Lucida Grande",Helvetica,Arial,Verdana,sans-serif;color:#222;}a,a:hover{color:#1B80BB;text-decoration:none;}a:hover{color:#0D3247;}a.button{white-space:nowrap;background-color:rgba(0,0,0,0.05);padding:5px 8px;-moz-border-radius:4px;-webkit-border-radius:4px;border-radius:4px;-moz-transition:background-color 0.2s linear;-webkit-transition:background-color 0.2s linear;-o-transition:background-color 0.2s linear;}a.button:hover{background-color:rgba(0,0,0,0.25);color:rgba(255,255,255,1);-webkit-box-shadow:0px 0px 3px rgba(0,0,0,0.1);-moz-box-shadow:0px 0px 3px rgba(0,0,0,0.1);box-shadow:0px 0px 3px rgba(0,0,0,0.1);}a.button:active{background-color:rgba(0,0,0,0.4);}a.delete{color:#BA1A1A;}p{padding:10px 20px;}form td{border:0px;text-align:left;}form tr:hover{background-color:rgba(255,255,255,0.1);}.fb_required{font-weight:bold;}.fb_error,.fb_invalid,.warning{color:#BA1A1A;}label{color:#333;}input,textarea,select{font-size:100%;font-family:"Lucida Grande",Helvetica,Arial,Verdana,sans-serif;color:#333;background-color:rgba(255,255,255,0.3);border:1px solid #DDD;margin:0px 5px;padding:4px 8px;-moz-border-radius:4px;-webkit-border-radius:4px;border-radius:4px;}input[type="text"],input[type="password"],select,textarea {-webkit-transition:border 0.2s linear,-webkit-box-shadow 0.2s linear;-moz-transition:border 0.2s linear,-moz-box-shadow 0.2s linear;-o-transition:border 0.2s linear,box-shadow 0.2s linear;}input[type="text"]:focus,input[type="password"]:focus,select:focus,textarea:focus {outline:none;border:1px solid #BBB;-webkit-box-shadow:0 0 6px rgba(0,0,0,0.4);-moz-box-shadow:0 0 6px rgba(0,0,0,0.4);box-shadow:0 0 6px rgba(0,0,0,0.4);}input[type="radio"],input[type="submit"]{font-size:108%;padding:4px 8px;-moz-border-radius:5px;-webkit-border-radius:5px;border-radius:5px;cursor:pointer;background-color:#EEE;background:-moz-linear-gradient(top,#FFF 0%,#DFDFDF 40%,#C3C3C3 100%);background:-webkit-gradient(linear, left top, left bottom, from(#FFF), to(#C3C3C3), color-stop(0.4, #DFDFDF));-moz-transition:-moz-box-shadow 0.3s linear;-webkit-transition:-webkit-box-shadow 0.3s linear;text-shadow:0px 1px 1px rgba(255,255,255,0.9);-webkit-box-shadow:0 2px 3px rgba(0,0,0,0.4);-moz-box-shadow:0 2px 3px rgba(0,0,0,0.4);box-shadow:0 2px 3px rgba(0,0,0,0.4);}input:hover[type="submit"]{background:#D0D0D0;color:#0D3247;background:-moz-linear-gradient(top,#FFF,#B0B0B0);background:-webkit-gradient(linear,left top,left bottom,from(#FFF), to(#B0B0B0));-webkit-box-shadow:0 2px 9px rgba(0,0,0,0.4);-moz-box-shadow:0 2px 9px rgba(0,0,0,0.4);box-shadow:0 2px 9px rgba(0,0,0,0.4);}input:active[type="submit"]{background:-webkit-gradient(linear,left top,left bottom,from(#B0B0B0), to(#EEE));background:-moz-linear-gradient(top,#B0B0B0,#EEE);-webkit-box-shadow:0 1px 5px rgba(0,0,0,0.8);-moz-box-shadow:0 1px 5px rgba(0,0,0,0.8);box-shadow:0 1px 5px rgba(0,0,0,0.8);}h1,h2{font-size:350%;padding:15px;text-shadow:0px 1px 2px rgba(0,0,0,0.4);}p{padding:10px 20px;}div{padding:10px 10px 10px 10px;}table{padding:5px 10px;width:100%;}th,td{padding:14px 6px;border-bottom:1px solid #F3F3F3;border-bottom:1px solid rgba(0,0,0,0.025);font-size:85%;}th{color:#666;font-size:108%;font-weight:normal;border:0;background-color:#E0E0E0;background:-moz-linear-gradient(top,rgba(243,243,243,0.5) 0%,rgba(208,208,208,0.9) 80%,rgba(207,207,207,0.9) 100%);background:-webkit-gradient(linear,left top,left bottom,from(rgba(243,243,243,0.5)),to(rgba(207,207,207,0.9)),color-stop(0.8, rgba(208,208,208,0.9)));text-shadow:0px 1px 1px rgba(255,255,255,0.9);}tr{background-color:rgba(255,255,255,0.1);}tr:hover{background-color:rgba(0,0,0,0.025);}div.block{padding:5px;text-align:right;font-size:108%;}.menu{background-color:#E3E3E3;background:-moz-linear-gradient(top,rgba(240,240,240,0.5) 0%,rgba(224,224,224,0.9) 60%,rgba(221,221,221,0.9) 100%);background:-webkit-gradient(linear,left top,left bottom,from(rgba(240,240,240,0.5)),to(rgba(221,221,221,0.9)),color-stop(0.6,rgba(224,224,224,0.9)));padding:0px;width:100%;height:37px;-moz-border-radius-topleft:5px;-moz-border-radius-topright:5px;-webkit-border-top-left-radius:5px;-webkit-border-top-right-radius:5px;border-top-left-radius:5px;border-top-right-radius:5px;}.menu ul{padding:10px 6px 0px 6px;}.menu ul li{display:inline;}.menu ul li a{text-shadow:0px 1px 1px rgba(255,255,255,0.9);float:left;display:block;color:#555;background-color:#D0D0D0;text-decoration:none;margin:0px 4px;padding:6px 18px;height:15px;-moz-border-radius-topleft:5px;-moz-border-radius-topright:5px;-webkit-border-top-left-radius:5px;-webkit-border-top-right-radius:5px;border-top-left-radius:5px;border-top-right-radius:5px;-moz-transition:background-color 0.2s linear;-webkit-transition:background-color 0.2s linear;-o-transition:background-color 0.2s linear;}.menu ul li a:hover,.menu ul li a.current{-webkit-box-shadow:0px -2px 3px rgba(0,0,0,0.07);-moz-box-shadow:0px -2px 3px rgba(0,0,0,0.07);box-shadow:0px -2px 3px rgba(0,0,0,0.07);}.menu ul li a:hover{background-color:#F0F0F0;color:#0D3247;}.menu ul li a:active{background-color:#FFF;color:#1B80BB;}.menu ul li a.current,.menu ul li a.current:hover{cursor:pointer;background-color:#FFF;}.pager{display:block;float:left;padding:2px 6px;border:1px solid #D0D0D0;margin-right:1px;background-color:rgba(255,255,255,0.1);-moz-border-radius:3px;-webkit-border-radius:3px;border-radius:3px;-moz-transition:border 0.2s linear;-webkit-transition:border 0.2s linear;-o-transition:border 0.2s linear;}a.pager:hover{border:1px solid #1B80BB;}</style>'},
@@ -44,7 +44,7 @@ sub _config {
 			'datetime' => {validate => '/^(0?[1-9]|[1-2][0-9]|3[0-1])\/(0?[1-9]|1[0-2])\/[0-9]{4}|([0-9]{4}\-0?[1-9]|1[0-2])\-(0?[1-9]|[1-2][0-9]|3[0-1])\s+[0-9]{1,2}:[0-9]{2}$/', format => {for_edit => sub{_edit_datetime(@_);}, for_view => sub{_view_datetime(@_);}, for_update => sub{_update_datetime(@_);}, for_search => sub {_search_date(@_);}, for_filter => sub {_search_date(@_);}}},
 			'timestamp' => {readonly => "readonly", disabled => 1, format => {for_view => sub {_view_timestamp(@_);}, for_create => sub {_create_timestamp(@_);}, for_edit => sub {_create_timestamp(@_);}, for_update => sub {_update_timestamp(@_);}, for_search => sub {_search_date(@_);}, for_filter => sub {_search_date(@_);}}},
 			'description' => {sortopts => 'LABELNAME', type => 'textarea', cols => '55', rows => '10'},
-			'time' => {validate => '/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/', maxlength => 5, format => {for_update => sub {_udpate_time(@_)}, for_edit => sub{_edit_time(@_);}, for_view => sub{_view_time(@_);}}},
+			'time' => {validate => '/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/', maxlength => 5, format => {for_update => sub {_update_time(@_)}, for_edit => sub{_edit_time(@_);}, for_view => sub{_view_time(@_);}}},
 			'length' => {validate => 'NUM', sortopts => 'NUM', format => {for_view => sub {my ($self, $column) = @_;my $value = $self->$column;return unless $value;return $value.' cm';}}},
 			'weight' => {validate => 'NUM', sortopts => 'NUM', format => {for_view => sub {my ($self, $column) = @_;my $value = $self->$column;return unless $value;return $value.' kg';}}},
 			'volume' => {validate => 'NUM', sortopts => 'NUM', format => {for_view => sub {my ($self, $column) = @_;my $value = $self->$column;return unless $value;return $value.' cm<sup>3</sup>';}}},
@@ -61,11 +61,11 @@ sub _config {
 			'abn' => {label => 'ABN', validate => '/^(\d{2}\s*\d{3}\s*\d{3}\s*\d{3})$/', comment => 'e.g. 12 234 456 678'},
 			'money' => {validate => '/^\-?\d{1,11}(\.\d{2})?$/', sortopts => 'NUM', format => {for_view => sub {my ($self, $column) = @_;return unless defined $self->$column;return sprintf ('$%.02f', $self->$column);}, for_edit => sub {my ($self, $column) = @_;return unless defined $self->$column;return sprintf ('%.02f', $self->$column);}}},
 			'percentage' => {validate => 'NUM', sortopts => 'NUM', comment => 'e.g.: 99.8', format => {for_view => sub {my ($self, $column, $value) = @_;$value = $self->$column;return unless $value;my $p = $value*100;return "$p%";}, for_edit => sub {my ($self, $column) = @_;my $value = $self->$column;return unless defined $value;return $value*100;}, for_update => sub {my ($self, $column, $value) = @_;return $self->$column($value/100) if $value;},  for_search => sub {_search_percentage(@_);}, for_filter => sub {_search_percentage(@_);}}},
-			'document' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+$/', format => {path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_update => sub {_update_file(@_);}, for_view => sub {_view_file(@_)}}, type => 'file'},
-			'image' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+$/', format => {path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_image(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
-			'media' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+$/', format => {path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_media(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
-			'video' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+$/', format => {path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_video(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
-			'audio' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+$/', format => {path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_audio(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
+			'document' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+$/', format => {remove => sub {_remove_file(@_);}, path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_update => sub {_update_file(@_);}, for_view => sub {_view_file(@_)}}, type => 'file'},
+			'image' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+$/', format => {remove => sub {_remove_file(@_);}, path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_image(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
+			'media' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+$/', format => {remove => sub {_remove_file(@_);}, path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_media(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
+			'video' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+$/', format => {remove => sub {_remove_file(@_);}, path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_video(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
+			'audio' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+$/', format => {remove => sub {_remove_file(@_);}, path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_audio(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
 			'ipv4' => {validate => 'IPV4'},
 			'boolean' => {validate => '/^[0-1]$/', sortopts => 'LABELNAME', options => {1 => 'Yes', 0 => 'No'}, format => {for_view => sub {my ($self, $column) = @_;my $options = {1 => 'Yes', 0 => 'No'};return $options->{$self->$column};}, for_search => sub {_search_boolean(@_)}, for_filter => sub {_search_boolean(@_)}}},
 		}
@@ -662,7 +662,14 @@ sub render_as_form {
 					unless (exists $field_def->{comment}) {
 						my $value = $form->cgi_param($form_id.'_'.$column) || $form->cgi_param($column) || $self->$column;
 						my $file_location = _get_file_url($self, $column, $value);
-						$field_def->{comment} = '<a class="download_message" href="'.$file_location.'">'. $form_config->{download_message} .'</a>' if $file_location;
+						
+						if ($file_location) {
+							$field_def->{comment} = '<a class="download_message" href="'.$file_location.'">'. $form_config->{download_message} .'</a>';
+							if ($form_config->{remove_files}) {
+								my $remove_field_id = 'remove_'. $field_prefix . $column;
+								$field_def->{comment} .= ' <input id="'. $remove_field_id . '" name="'. $field_prefix . 'remove_files" type="checkbox" class="remove_message" value="' . $column . '"/><label for="' . $remove_field_id . '">' . $form_config->{remove_message} . '</label>';
+							}
+						}
 					}
 				}
 			}
@@ -743,12 +750,15 @@ sub render_as_form {
 			if ($form_validate) {
 				no strict 'refs';
 				my $form_action_callback = '_'.$form_action.'_object';
+				my @files_to_remove;
+				@files_to_remove = $form->cgi_param($field_prefix . 'remove_files') if $form_config->{remove_files};
+				
 				if (exists $args{controllers}->{$form->submitted}) {
 					# method buttons
 					if (ref $args{controllers}->{$form->submitted} eq 'HASH') {
 						if ($args{controllers}->{$form->submitted}->{$form_action}) {
 							unless (ref $args{controllers}->{$form->submitted}->{$form_action} eq 'CODE' && ! $args{controllers}->{$form->submitted}->{$form_action}->($self)) {
-								$self = $form_action_callback->($self, $class, $table, $field_order, $form, $form_id, $args{prefix}, $relationships, $relationship_object);
+								$self = $form_action_callback->($self, $class, $table, $field_order, $form, $form_id, $args{prefix}, $relationships, $relationship_object, \@files_to_remove);
 								$output->{self} = $self;
 							}
 						}
@@ -762,7 +772,7 @@ sub render_as_form {
 					}
 				}
 				elsif($form->submitted eq ucfirst ($form_action)) {
-					$self = $form_action_callback->($self, $class, $table, $field_order, $form, $form_id, $args{prefix}, $relationships, $relationship_object);
+					$self = $form_action_callback->($self, $class, $table, $field_order, $form, $form_id, $args{prefix}, $relationships, $relationship_object, \@files_to_remove);
 					$output->{self} = $self;
 				}
 				$output->{validate} = $form_validate;
@@ -1795,7 +1805,7 @@ sub _pagination {
 }
 
 sub _copy_object {
-	my ($self, $class, $table, $field_order, $form, $form_id, $prefix, $relationships, $relationship_object) = @_;
+	my ($self, $class, $table, $field_order, $form, $form_id, $prefix, $relationships, $relationship_object, $files_to_remove) = @_;
 	my $clone = Rose::DB::Object::Helpers::clone_and_reset($self);
 	$clone->save(); # need the auto generated primary key for files;
 
@@ -1804,11 +1814,11 @@ sub _copy_object {
 	my $self_upload_path = File::Spec->catdir($renderer_config->{upload}->{path}, $self->stringify_class, $self->$primary_key);
 	File::Copy::Recursive::dircopy($self_upload_path, File::Spec->catdir($renderer_config->{upload}->{path}, $self->stringify_class, $clone->$primary_key)) if -d $self_upload_path;
 
-	return _update_object($clone, $class, $table, $field_order, $form, $form_id, $prefix, $relationships, $relationship_object);
+	return _update_object($clone, $class, $table, $field_order, $form, $form_id, $prefix, $relationships, $relationship_object, $files_to_remove);
 }
 
 sub _update_object {
-	my ($self, $class, $table, $field_order, $form, $form_id, $prefix, $relationships, $relationship_object) = @_;
+	my ($self, $class, $table, $field_order, $form, $form_id, $prefix, $relationships, $relationship_object, $files_to_remove) = @_;
 	my $primary_key = $self->meta->primary_key_column_names->[0];
 
 	foreach my $field (@{$field_order}) {
@@ -1892,12 +1902,14 @@ sub _update_object {
 			}
 		}
 	}
+	
+	_remove_column_files($self, $files_to_remove) if $files_to_remove && @{$files_to_remove};
 	$self->save;
 	return $self;
 }
 
 sub _create_object {
-	my ($self, $class, $table, $field_order, $form, $form_id, $prefix, $relationships, $relationship_object) = @_;
+	my ($self, $class, $table, $field_order, $form, $form_id, $prefix, $relationships, $relationship_object, $files_to_remove) = @_;
 	my $custom_field_value;
 
 	$self = $self->new();
@@ -2001,6 +2013,14 @@ sub _get_relationships {
 	return $relationships;
 }
 
+sub _remove_column_files {
+	my ($self, $columns) = @_;	
+	foreach my $column (@{$columns}) {
+		my $remove_file_method = $column . '_remove';
+		$self->$remove_file_method if $self->can($remove_file_method);
+	}
+}
+
 sub delete_with_file {
 	my $self = shift;
 	return unless ref $self;
@@ -2100,7 +2120,7 @@ sub _update_date {
 	return $self->$column($dt->ymd);
 }
 
-sub _udpate_time {
+sub _update_time {
 	my ($self, $column, $value) = @_;
 	return $self->$column(undef) unless $value;
 	my ($h, $m) = split ':', $value;
@@ -2279,6 +2299,15 @@ sub _search_date {
 sub _search_percentage {
 	my ($self, $column, $value) = @_;
 	return $value/100;
+}
+
+sub _remove_file {
+	my ($self, $column) = @_;
+	return unless ref $self && $self->$column;
+	my $primary_key = $self->meta->primary_key_column_names->[0];
+	my $directory = File::Spec->catdir(_get_renderer_config($self)->{upload}->{path}, $self->stringify_class, $self->$primary_key, $column);
+	rmtree($directory) || die ("Could not remove $directory") if -d $directory;
+	return $self->$column(undef);
 }
 
 # misc util
@@ -2593,8 +2622,10 @@ The C<form> option defines the global default behaviours of C<render_as_form>:
   $renderer->config({
     ...
     form => {
-      download_message => 'Get Current File',  # the name of the link for uploaded files
-      cancel => 'Back',  # the name of the built-in 'Cancel' controller
+      download_message => 'View File',  # the name of the link for uploaded files, defaulted to 'View'
+      remove_files => 1,  # allow users to remove uploaded files, default to undef
+      remove_message => 'Remove File',  # the label of the checkbox for removing files, defaulted to 'Remove'
+      cancel => 'Back',  # the name of the built-in 'Cancel' controller, defaulted to 'Cancel'
       delimiter => ' '  # the delimiter for handling column with muliple values, defaulted to ','
     },
   });
