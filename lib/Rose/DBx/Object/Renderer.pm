@@ -22,7 +22,7 @@ use Digest::MD5 ();
 use Scalar::Util ();
 
 our $VERSION = 0.74;
-# 239.62
+# 240.62
 
 sub _config {
 	my $config = {
@@ -664,10 +664,10 @@ sub render_as_form {
 						my $file_location = _get_file_url($self, $column, $value);
 						
 						if ($file_location) {
-							$field_def->{comment} = '<a class="download_message" href="'.$file_location.'">'. $form_config->{download_message} .'</a>';
+							$field_def->{comment} = '<a class="button" href="'.$file_location.'">'. $form_config->{download_message} .'</a>';
 							if ($form_config->{remove_files}) {
 								my $remove_field_id = 'remove_'. $field_prefix . $column;
-								$field_def->{comment} .= ' <input id="'. $remove_field_id . '" name="'. $field_prefix . 'remove_files" type="checkbox" class="remove_message" value="' . $column . '"/><label for="' . $remove_field_id . '">' . $form_config->{remove_message} . '</label>';
+								$field_def->{comment} .= ' <input id="'. $remove_field_id . '" name="'. $field_prefix . 'remove_files" type="checkbox" value="' . $column . '"/><label for="' . $remove_field_id . '">' . $form_config->{remove_message} . '</label>';
 							}
 						}
 					}
