@@ -22,7 +22,7 @@ use Digest::MD5 ();
 use Scalar::Util ();
 
 our $VERSION = 0.74;
-# 240.62
+# 241.62
 
 sub _config {
 	my $config = {
@@ -2282,18 +2282,29 @@ sub _search_boolean {
 
 sub _search_date {
 	my ($self, $column, $value) = @_;
-	$value =~ s/\//-/g;
-	my ($d, $m, $y) = ($value =~ /^(0?[1-9]|[1-2][0-9]|3[0-1])\-(0?[1-9]|1[0-2])\-([0-9]{4})/);
-	if ($d && $m && $y) {
-		$value =~ s/$d\-$m\-$y/$y\-$m\-$d/;
+	my ($date, $month_name, $year) = ($value =~ /(\d{1,2})?\s?([a-zA-Z]+)\s?(\d{4})?/);
+	if ($month_name) {
+		my $month = 1;
+		foreach my $abbr ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec') {
+			last if $month_name =~ /^$abbr/i;
+			$month++;
+		}
+		
+		return sprintf('%4d-%02d-%02d', $year, $month, $date) if $year && $month && $date;
+		return sprintf('%4d-%02d', $year, $month) if $year && $month;
+		return sprintf('%02d-%02d', $month, $date) if $month && $date;
+		return sprintf('-%02d-', $month) if $month;
 	}
 	else {
-		($d, $m) = ($value =~ /^(0?[1-9]|[1-2][0-9]|3[0-1])\-(0?[1-9]|1[0-2])/);
-		if ($d && $m) {
-			$value =~ s/$d\-$m/$m\-$d/;
-		}
+		$value =~ s/\//-/g;
+		my ($d, $m, $y) = ($value =~ /^(0?[1-9]|[1-2][0-9]|3[0-1])\-(0?[1-9]|1[0-2])\-([0-9]{4})$/);
+		return sprintf('%4d-%02d-%02d', $y, $m, $d) if $d && $m && $y;
+		($m, $y) = ($value =~ /^(0?[1-9]|1[0-2])\-([0-9]{4})$/);
+		return sprintf('%4d-%02d', $y, $m) if $m && $y;
+		($d, $m) = ($value =~ /^(0?[1-9]|[1-2][0-9]|3[0-1])\-(0?[1-9]|1[0-2])$/);
+		return sprintf('%02d-%02d', $m, $d) if $m && $d;
+		return $value;
 	}
-	return $value;
 }
 
 sub _search_percentage {
