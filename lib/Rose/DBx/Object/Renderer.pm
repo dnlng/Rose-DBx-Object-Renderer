@@ -22,7 +22,7 @@ use Digest::MD5 ();
 use Scalar::Util ();
 
 our $VERSION = 0.74;
-# 241.62
+# 242.62
 
 sub _config {
 	my $config = {
@@ -535,7 +535,7 @@ sub render_as_form {
 				$field_def->{value} = $foreign_object_value;
 			}
 
-			unless ($field_def->{static} || $field_def->{type} eq 'hidden' || exists $field_def->{options}) {
+			unless ($field_def->{static} || (defined $field_def->{type} && $field_def->{type} eq 'hidden') || exists $field_def->{options}) {
 				my $objects = Rose::DB::Object::Manager->get_objects(object_class => $relationships->{$column}->{class});
 				if (@{$objects}) {
 					foreach my $object (@{$objects}) {
@@ -552,7 +552,7 @@ sub render_as_form {
 			# normal column
 			$field_def->{required} = 1 if ! defined $field_def->{required} && $class->meta->{columns}->{$column}->{not_null};
 			
-			unless (exists $field_def->{options} || $field_def->{type} eq 'hidden') {
+			unless (exists $field_def->{options} || (defined $field_def->{type} && $field_def->{type} eq 'hidden')) {
 				if (exists $foreign_keys->{$column}) {
 					# create or edit
 					my $foreign_class = $foreign_keys->{$column}->{class};
@@ -793,8 +793,10 @@ sub render_as_form {
 			$html_form .= $form->render;
 		}
 		else {
-			$args{description} = qq(<p>$args{description}</p>) if defined $args{description};
-			$html_form .= qq(<div><h1>$form_title</h1>$args{description}) . _touch_up($form->render(), $cancel, $form_id) . '</div>';
+			$html_form .= qq(<div><h1>$form_title</h1>);
+			$html_form .= qq(<p>$args{description}</p>) if defined $args{description};
+			$html_form .= _touch_up($form->render(), $cancel, $form_id) . '</div>';
+			
 			$html_form = qq($renderer_config->{misc}->{doctype}<html><head><title>$form_title</title>$html_head</head><body>$html_form</body></html>) unless $args{no_head};
 			$html_form .= qq(<script type="text/javascript">$args{javascript_code}</script>) if $args{javascript_code};
 		}
@@ -964,8 +966,9 @@ sub render_as_table {
 				my $cgi_column;
 				$cgi_column = $table_id.'_' if $args{prefix};
 				$cgi_column .= $column;
-
-				if (length $query->param($cgi_column)) {
+				
+				my $cgi_column_param = $query->param($cgi_column);
+				if (defined $cgi_column_param && length $cgi_column_param) {
 					my @cgi_column_values = $query->param($cgi_column);
 					my $formatted_values;
 					if ($class->can($column . '_for_filter')) {
@@ -1114,13 +1117,12 @@ sub render_as_table {
 		}
 
 		$args{queries}->{$param_list->{ajax}} = 1 if $args{ajax} && $args{template};
-
-		if(exists $args{queries}) {
-			my $default_query_string = _create_query_string($args{queries});
-			$query_string->{base} = $default_query_string;
-			$query_string->{sort_by} = $default_query_string;
-			$query_string->{page} = $default_query_string;
-		}
+		
+		my $default_query_string = '';
+		$default_query_string = _create_query_string($args{queries}) if exists $args{queries};		
+		$query_string->{base} = $default_query_string;
+		$query_string->{sort_by} = $default_query_string;
+		$query_string->{page} = $default_query_string;
 
 		if($query->param($param_list->{sort_by})) {
 			$query_string->{page} .= $param_list->{sort_by}.'='.$query->param($param_list->{sort_by}).'&amp;' unless $query_string->{page} =~ /$param_list->{sort_by}=/;
@@ -1160,7 +1162,8 @@ sub render_as_table {
 			}
 
 			unless (exists $relationships->{$column} || $column_definition->{unsortable} || (exists $args{columns} && exists $args{columns}->{$column} && (exists $args{columns}->{$column}->{value} || $args{columns}->{$column}->{unsortable}))) {
-				if ($query->param($param_list->{'sort_by'}) eq $column) {
+				my $sort_by_param = $query->param($param_list->{'sort_by'});
+				if (defined $sort_by_param && $sort_by_param eq $column) {
 					$head->{link} = qq($url?$query_string->{sort_by}$param_list->{sort_by}=$column desc);
 				}
 				else {
@@ -1310,10 +1313,11 @@ sub render_as_table {
 			});
 		}
 		else {
-			$args{description} = qq(<p>$args{description}</p>) if defined $args{description};
+
 			$html_table .= '<div>';
 			$html_table .= qq(<div class="block"><form action="$url" method="get" id="$table_id\_search_form"><input type="text" name="$param_list->{q}" id="$table_id\_search" value="$q" placeholder="Search"/>$query_hidden_fields</form></div>) if $args{searchable};
-			$html_table .= qq(<h1>$table_title</h1>$args{description});
+			$html_table .= qq(<h1>$table_title</h1>);
+			$html_table .= qq(<p>$args{description}</p>) if defined $args{description};
 			$html_table .= qq(<div class="block"><div><a href="$table->{create}->{link}" class="button">$table->{create}->{value}</a></div></div>) if exists $table->{create};
 			$html_table .= qq(<table id="$table_id">);
 
@@ -1338,13 +1342,16 @@ sub render_as_table {
 						if (exists $column->{link}) {
 							my $css_class;
 							if (exists $column->{controller}) {
-								(my $css_delete_class) = ' delete' if $column->{name} eq 'delete';
+								my $css_delete_class = '';
+								$css_delete_class = ' delete' if $column->{name} eq 'delete';
 								$css_class = ' class="button' . $css_delete_class . '"';
 							}
 							$html_table .= qq(<td><a href="$column->{link}"$css_class>$column->{value}</a></td>);
 						}
 						else {
-							$html_table .= qq(<td>$column->{value}</td>);
+							my $column_value = '';
+							$column_value = $column->{value} if defined $column->{value};
+							$html_table .= qq(<td>$column_value</td>);
 						}
 
 					}
@@ -1525,15 +1532,16 @@ sub render_as_menu {
 		);
 	}
 	else {
-		unless ($args{hide_menu}) { 
-			$args{description} = qq(<p>$args{description}</p>) if defined $args{description};
+		unless ($args{hide_menu}) {
 			$menu = '<div><div class="menu"><ul>';
 			foreach my $item (@{$item_order}) {
 				$menu .= '<li><a ';
 				$menu .= 'class="current" ' if $items->{$item}->{table} eq $current;
 				$menu .= 'href="'.$items->{$item}->{link}.'">'.$items->{$item}->{label}.'</a></li>';
 			}
-			$menu .= '</ul></div>'.$args{'description'}.'</div>';
+			$menu .= '</ul></div>';
+			$menu .= qq(<p>$args{description}</p>) if defined $args{description};
+			$menu .= '</div>';
 		}
 		$menu .= $output->{table}->{output};
 		$menu = qq($renderer_config->{misc}->{doctype}<html><head><title>$menu_title</title>$html_head</head><body>$menu</body></html>) unless $args{no_head};
@@ -1707,8 +1715,9 @@ sub render_as_chart {
 			);
 		}
 		else {
-			$args{description} = qq(<p>$args{description}</p>) if defined $args{description};
-			$chart = qq(<div><h1>$title</h1>$args{'description'}<img src="$chart_url" alt="$title"/></div>);
+			$chart = qq(<div><h1>$title</h1>);
+			$chart .= qq(<p>$args{description}</p>) if defined $args{description};
+			$chart .= qq(<img src="$chart_url" alt="$title"/></div>);
 			$chart = qq($renderer_config->{misc}->{doctype}<html><head><title>$title</title>$html_head</head><body>$chart</body></html>) unless $args{no_head};
 		}
 	}
