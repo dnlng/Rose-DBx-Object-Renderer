@@ -1,6 +1,6 @@
 Revision history for Rose-DBx-Object-Renderer
 
-0.74    10/11/2010
+0.74    17/11/2010
         Updated default CSS.
         Fixed a bug related to hiding the output of render_as_table() via query param.
         Fixed the logic for checking if the auto generated Rose object base class is loaded already.
@@ -22,6 +22,7 @@ Revision history for Rose-DBx-Object-Renderer
         Added the ability to remove uploaded files in render_as_form().
         Added the 'remove_files' option to the default config() hash. Added the 'remove' formatting method to file type columns.
         Code refactoring.
+        Added tests.
         Updated POD.
 0.73    13/07/2010
         Fixed a bug introduced in 0.71 where rendering methods failed to use custom stringify_me() methods (Reported by Gary Ashton-Jones).
