@@ -3479,7 +3479,7 @@ Xufeng (Danny) Liang (danny.glue@gmail.com)
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2008 Xufeng (Danny) Liang, All Rights Reserved.
+Copyright 2008-2010 Xufeng (Danny) Liang, All Rights Reserved.
 
 This program is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
 
