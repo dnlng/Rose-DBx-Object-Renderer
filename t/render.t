@@ -140,7 +140,7 @@ like ($form_output, qr/DOCTYPE HTML/, 'Form HTML head');
 
 like ($form_output, qr/validate_company_testemployee_form/, 'Form JS validation function');
 
-my $date_of_birth_js_regex = 'date_of_birth.match(/^(0?[1-9]|[1-2][0-9]|3[0-1])\/(0?[1-9]|1[0-2])\/[0-9]{4}$/)';
+my $date_of_birth_js_regex = 'date_of_birth.match(/^(0?[1-9]|[1-2][0-9]|3[0-1])\/(0?[1-9]|1[0-2])\/[0-9]{4}|([0-9]{4}\-0?[1-9]|1[0-2])\-(0?[1-9]|[1-2][0-9]|3[0-1])$/)';
 like ($form_output, qr/\Q$date_of_birth_js_regex\E/, 'Form JS regular expression for validating "Date Of Birth"');
 
 like ($form_output, qr/<h1>Add Employee<\/h1>/, 'Custom form title');
