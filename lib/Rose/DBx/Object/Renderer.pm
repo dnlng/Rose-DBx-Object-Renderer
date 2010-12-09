@@ -21,8 +21,8 @@ use File::Spec;
 use Digest::MD5 ();
 use Scalar::Util ();
 
-our $VERSION = 0.74;
-# 242.62
+our $VERSION = 0.75;
+# 243.63
 
 sub _config {
 	my $config = {
@@ -841,7 +841,11 @@ sub render_as_table {
 		}
 	}
 
-	if ($args{get_from_sql}) {
+	if ($args{objects}) {
+		$objects = $args{objects};
+		$table_config->{no_pagination} = 1;
+	}
+	elsif ($args{get_from_sql}) {
 		if (ref $args{get_from_sql} eq 'HASH') {
 			$objects = $self->get_objects_from_sql(%{$args{get_from_sql}});
 		}
@@ -3215,7 +3219,7 @@ C<get> accepts a hashref to construct database queries. C<get> is directly passe
 
 =item C<get_from_sql>
 
-C<get_from_sql> accepts arguments, such as an SQL statement, for the C<get_objects_from_sql> method from L<Rose::DB::Object::Manager>.
+C<get_from_sql> accepts arguments, such as an SQL statement, supported by the C<get_objects_from_sql> method from L<Rose::DB::Object::Manager>.
 
   Company::Employee::Manager->render_as_table(
     order => ['id', 'first_name', 'email'],
@@ -3223,6 +3227,16 @@ C<get_from_sql> accepts arguments, such as an SQL statement, for the C<get_objec
   );
 
 C<get_from_sql> takes precedence over C<get>. The default table pagination will be also disabled.
+
+=item C<objects>
+
+C<objects> accepts an array of L<Rose::DB::Object> objects.
+
+  Company::Employee::Manager->render_as_table(
+    objects => Company::Employee::Manager->get_objects(query => [hobby => 'Coding']),
+  );
+
+C<objects> takes precedence over C<get_from_sql>. The default table pagination will be also disabled.
 
 =item C<controllers> and C<controller_order>
 
