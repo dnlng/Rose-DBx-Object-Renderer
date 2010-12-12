@@ -1,7 +1,8 @@
 Revision history for Rose-DBx-Object-Renderer
 
-0.75    10/12/2010
+0.75    13/12/2010
         Added the 'objects' parameter to render_as_table().
+        Keep track of query params for filtered columns in render_as_table().
         Updated POD.
 0.74    17/11/2010
         Updated default CSS.

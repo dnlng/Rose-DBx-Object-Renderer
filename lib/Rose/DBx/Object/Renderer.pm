@@ -988,6 +988,7 @@ sub render_as_table {
 
 					if ($formatted_values) {
 						push @{$filtered_columns}, $column => $formatted_values;
+						$args{queries}->{$cgi_column} = \@cgi_column_values unless exists $args{queries}->{$cgi_column};
 					}
 				}
 			}
