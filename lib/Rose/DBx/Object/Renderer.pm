@@ -1008,8 +1008,9 @@ sub render_as_table {
 		}
 
 		unless (exists $args{get} && (exists $args{get}->{limit} || exists $args{get}->{offset})) {
-			$args{get}->{per_page} ||= $query->param($param_list->{'per_page'}) || $table_config->{per_page};
-			$args{queries}->{$param_list->{per_page}} ||= $query->param($param_list->{'per_page'});
+			my $query_param_per_page = $query->param($param_list->{'per_page'});
+			$args{get}->{per_page} ||= $query_param_per_page || $table_config->{per_page};
+			$args{queries}->{$param_list->{per_page}} ||= $query_param_per_page if $query_param_per_page;
 			$args{get}->{page} ||= $query->param($param_list->{'page'}) || 1;
 		}
 		$objects = $self->get_objects(%{$args{get}});
