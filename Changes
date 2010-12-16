@@ -1,5 +1,9 @@
 Revision history for Rose-DBx-Object-Renderer
 
+0.76    16/12/2010
+        Added the 'load_js' and 'js' options to the default config.
+        Deprecated the 'javascript_code' option in rendering methods. Updated the sample templates accordingly.
+        Updated POD.
 0.75    13/12/2010
         Added the 'objects' parameter to render_as_table().
         Keep track of query params for filtered columns in render_as_table().
