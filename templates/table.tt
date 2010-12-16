@@ -41,9 +41,4 @@
 			</div>
 		[% END %]
 	</div>
-	[% IF javascript_code %]
-		<script type="text/javascript">
-			[% javascript_code %]
-		</script>
-	[% END %]
 [% END %]

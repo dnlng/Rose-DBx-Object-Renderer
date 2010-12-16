@@ -36,6 +36,5 @@
 		    alert(alertstr);
 		    return false;
 		}
-		[% javascript_code %]
 	</script>
 [% END %]
