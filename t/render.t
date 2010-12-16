@@ -37,7 +37,7 @@ if ($@) {
 	plan skip_all => 'Unable to create tables for testing';
 }
 
-plan tests => 16;
+plan tests => 17;
 
 use_ok('Rose::DBx::Object::Renderer');
 
@@ -61,6 +61,7 @@ my $form_output = Company::TestEmployee->render_as_form(
 		$args->{title} = 'Add Employee';
 	},
 	output => 1,
+	load_js => 1,
 	template => 0,
 	description => 'Some instructions',
 	order => ['first_name', 'last_name', 'email', 'date_of_birth', 'gender', 'photo', 'address', 'postcode', 'created_on', 'test_position_id'],
@@ -137,6 +138,8 @@ if ($@) {
 }
 
 like ($form_output, qr/DOCTYPE HTML/, 'Form HTML head');
+
+like ($form_output, qr/jquery/, 'Load JS');
 
 like ($form_output, qr/validate_company_testemployee_form/, 'Form JS validation function');
 
