@@ -1,5 +1,7 @@
 Revision history for Rose-DBx-Object-Renderer
 
+0.77    01/02/2010
+        Cloned 'order' to detach it before passing to forms in render_as_table().
 0.76    16/12/2010
         Added the 'load_js' and 'js' options to the default config.
         Deprecated the 'javascript_code' option in rendering methods. Updated the sample templates accordingly.

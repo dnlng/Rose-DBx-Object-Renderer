@@ -22,9 +22,10 @@ use File::Copy::Recursive ();
 use File::Spec;
 use Digest::MD5 ();
 use Scalar::Util ();
+use Clone qw(clone);
 
-our $VERSION = 0.76;
-# 248.64
+our $VERSION = 0.77;
+# 249.64
 
 sub _config {
 	my $config = {
@@ -1033,7 +1034,7 @@ sub render_as_table {
 					_inherit_form_option($option, $action, \%args);
 				}
 								
-				$args{$action}->{order} ||= $args{order} if $args{order};			
+				$args{$action}->{order} ||= Clone::clone($args{order}) if $args{order};			
 				$args{$action}->{template} ||= _template($args{template}, 'form', 1) if $args{template};
 				
 				@{$args{$action}->{queries}}{keys %{$args{queries}}} = values %{$args{queries}};

@@ -17,6 +17,7 @@ WriteMakefile(
         'CGI' => 0,
         'CGI::FormBuilder' => '3.05',
         'Template' => 0,
+        'Clone' => 0,
         'File::Path' => 0,
         'File::Copy' => 0,
         'File::Copy::Recursive' => 0,
