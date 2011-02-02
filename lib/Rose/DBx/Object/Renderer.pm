@@ -25,7 +25,7 @@ use Scalar::Util ();
 use Clone qw(clone);
 
 our $VERSION = 0.77;
-# 249.64
+# 251.64
 
 sub _config {
 	my $config = {
@@ -1119,9 +1119,9 @@ sub render_as_table {
 		}
 		else {
 		 	@controllers = keys %{$args{controllers}} if $args{controllers};
-			push @controllers, 'copy' if $args{copy};
-			push @controllers, 'edit' if $args{edit};
-			push @controllers, 'delete' if $args{delete};
+			foreach my $form_action ('copy', 'edit', 'delete') {
+				push @controllers, $form_action if $args{$form_action} && ! exists $args{controllers}->{$form_action};
+			}
 		}
 
 		$args{queries}->{$param_list->{ajax}} = 1 if $args{ajax} && $args{template};
@@ -1147,9 +1147,16 @@ sub render_as_table {
 		## Define Table
 
 		if ($args{create}) {
-			my $create_value = 'Create';
-			$create_value = $args{create}->{title} if ref $args{create} eq 'HASH' && exists $args{create}->{title};
-			$table->{create} = {value => $create_value, link => qq($url?$query_string->{complete}$param_list->{action}=create)} if $args{create};
+			if ($args{controllers} && $args{controllers}->{create} && ref $args{controllers}->{create} eq 'HASH' && exists $args{controllers}->{create}->{label}) {
+				$table->{create}->{value} = $args{controllers}->{create}->{label};
+			}
+			elsif (ref $args{create} eq 'HASH' && exists $args{create}->{title}) {
+				$table->{create}->{value} = $args{create}->{title};
+			}
+			else {
+				$table->{create}->{value} = 'Create';
+			}
+			$table->{create}->{link} = qq($url?$query_string->{complete}$param_list->{action}=create);			
 		}
 
 		$table->{total_columns} = scalar @{$column_order} + scalar @controllers;
