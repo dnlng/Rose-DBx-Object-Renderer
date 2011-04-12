@@ -25,7 +25,7 @@ use Scalar::Util ();
 use Clone qw(clone);
 
 our $VERSION = 0.77;
-# 251.64
+# 252.64
 
 sub _config {
 	my $config = {
@@ -548,6 +548,7 @@ sub render_as_form {
 				else {
 					$field_def->{type} ||= 'select';
 					$field_def->{disabled} ||= 1;
+					$field_def->{options} = ['']; # bypass CGI::FormBuilder warning
 				}
 			}
 		}
@@ -592,6 +593,7 @@ sub render_as_form {
 						else {
 							$field_def->{type} ||= 'select';
 							$field_def->{disabled} ||= 1;
+							$field_def->{options} = ['']; # bypass CGI::FormBuilder warning
 						}
 					}
 				}
