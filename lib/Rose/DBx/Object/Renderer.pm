@@ -2511,7 +2511,7 @@ sub _template {
 		return $template->{$ui_type} if exists $template->{$ui_type} && $template->{$ui_type} != 1;
 		return $ui_type . '.tt';
 	}
-	return $ui_type . '.tt' if $template != 1 || $default;
+	return $ui_type . '.tt' if $template == 1 || $default;
 	return $template;
 }
 
