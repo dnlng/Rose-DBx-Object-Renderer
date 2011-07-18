@@ -25,7 +25,7 @@ use Scalar::Util ();
 use Clone qw(clone);
 
 our $VERSION = 0.77;
-# 252.64
+# 253.64
 
 sub _config {
 	my $config = {
@@ -103,13 +103,12 @@ sub _config {
 }
 
 sub config {
-	my $self = shift;
+	my ($self, $config) = @_;
 	unless ($self && defined $self->{CONFIG}) {
 		$self->{CONFIG} = _config();
 	}
 
-	if (@_) {
-		my $config = shift;
+	if ($config) {
 		foreach my $hash (keys %{$config}) {
 			if ($hash eq 'columns') {
 				foreach my $column (keys %{$config->{columns}}) {
@@ -146,14 +145,14 @@ sub load {
 		}
 		elsif (defined $config->{db}->{name}) {
 			if ($config->{db}->{type} eq 'SQLite') {
-				my ($file, $ext) = ($config->{db}->{name} =~ /.*[\\\/](.*?)(\.[^\.]+)?$/);
+				my ($file, $ext) = ($config->{db}->{name} =~ /.*[\\\/](.*?)(\.[^\.]+)?$/x);
 				$args->{loader}->{class_prefix} = ucfirst $file if $file;
 			}
 			else {
 				$args->{loader}->{class_prefix} = $config->{db}->{name};
-				$args->{loader}->{class_prefix} =~ s/_(.)/\U$1/g;
-				$args->{loader}->{class_prefix} =~ s/[^\w:]/_/g;
-				$args->{loader}->{class_prefix} =~ s/\b(\w)/\u$1/g;
+				$args->{loader}->{class_prefix} =~ s/_(.)/\U$1/gx;
+				$args->{loader}->{class_prefix} =~ s/[^\w:]/_/gx;
+				$args->{loader}->{class_prefix} =~ s/\b(\w)/\u$1/gx;
 			}
 		}
 	}
@@ -198,8 +197,8 @@ sub load {
 			_process_columns($class, $config, $sorted_column_definition_keys);
 			my $package_renderer_config = $class . '::renderer_config';
 			*$package_renderer_config = sub {return $config};
-						
-			$class_type = 'object';	
+
+			$class_type = 'object';
 		}
 		else {
 			$class_type = 'manager';
@@ -215,7 +214,8 @@ sub load {
 }
 
 sub _process_columns {
-	my ($class, $config, $sorted_column_definition_keys) = _class_config_column_keys(@_);
+    my @args = @_;
+	my ($class, $config, $sorted_column_definition_keys) = _class_config_column_keys(@args);
 	my ($custom_definitions, $validated_unique_keys);
 	my $foreign_keys = _get_foreign_keys($class);
 	my $unique_keys = _get_unique_keys($class);
@@ -246,7 +246,7 @@ sub _process_columns {
 					sortopts => 'LABELNAME', format => {
 						for_view => sub {
 							my ($self, $column) = @_;
-							return unless $self->$column;							
+							return unless $self->$column;
 							return $self->$foreign_object_name->stringify_me;
 						}
 					}
@@ -255,7 +255,7 @@ sub _process_columns {
 			}
 			else {
 				DEF: foreach my $column_key (@{$sorted_column_definition_keys}) {
-					if ($column =~ /$column_key/ && ! exists $custom_definitions->{$column_key}) {
+					if ($column =~ /$column_key/x && ! exists $custom_definitions->{$column_key}) {
 						$column_type = $column_key;
 						last DEF;
 					}
@@ -263,7 +263,7 @@ sub _process_columns {
 
 				unless (defined $column_type) {
 					my $rdbo_column_type = lc ref $class->meta->{columns}->{$column};
-					($rdbo_column_type) = $rdbo_column_type =~ /^.*::([\w_]+)$/;
+					($rdbo_column_type) = $rdbo_column_type =~ /^.*::([\w_]+)$/x;
 
 					if (exists $config->{columns}->{$rdbo_column_type}) {
 						$column_type = $rdbo_column_type;
@@ -312,7 +312,7 @@ sub _process_columns {
 						if (ref $validated_unique_keys->{$column} eq 'CODE') {
 							$validated_unique_keys->{$column} = undef;
 						}
-						else {								    
+						else {
 							if (ref $validated_unique_keys->{$column} eq 'ARRAY') {
 								$validated_unique_keys->{$column} = $column_type_config->{validate};
                                 
@@ -330,8 +330,8 @@ sub _process_columns {
 								}
 
 								if ($validated_unique_keys->{$column} =~ /^m(\S)(.*)\1$/ || $validated_unique_keys->{$column} =~ /^(\/)(.*)\1$/) {
-									(my $regex = $2) =~ s#\\/#/#g;
-								    $regex =~ s#/#\\/#g;
+									(my $regex = $2) =~ s#\\/#/#gx;
+								    $regex =~ s#/#\\/#gx;
 									$config->{columns}->{$column}->{validate} = {
 										javascript => $validated_unique_keys->{$column},
 										perl => sub {my ($value, $form) = @_;return if ! length($value) || ! ($value =~ /$regex/);return _unique($column_config, $class, $column, $value, $form);}
@@ -393,7 +393,8 @@ sub _process_columns {
 }
 
 sub prepare_renderer {
-	my ($class, $config, $sorted_column_definition_keys) = _class_config_column_keys(@_);
+    my @args = @_;
+	my ($class, $config, $sorted_column_definition_keys) = _class_config_column_keys(@args);
 	_process_columns($class, $config, $sorted_column_definition_keys);
 	no strict 'refs';
 	my $package_renderer_config = $class . '::renderer_config';
@@ -428,6 +429,7 @@ sub _generate_methods {
 		my $package_column_definition = $class . '::' . $column . '_definition';
 		*$package_column_definition = sub {return $config->{columns}->{$column_type};};
 	}
+	return;
 }
 
 sub _before {
@@ -438,14 +440,14 @@ sub _before {
 }
 
 sub render_as_form {
-	my ($self, %args) = (@_);
-	_before($self, \%args) if exists $args{before};	
+	my ($self, %args) = @_;
+	_before($self, \%args) if exists $args{before};
 	my ($class, $form_action, $field_order, $output, $relationship_object);
 	my $table = $self->meta->table;
 	my $form_title = $args{title};
 	$class = ref $self || $self;
 	my $renderer_config = _prepare($class, $args{renderer_config}, $args{prepared});
-	my ($ui_type) = (caller(0))[3] =~ /^.*_(\w+)$/;
+	my ($ui_type) = (caller(0))[3] =~ /^.*_(\w+)$/x;
 	my $form_config = _ui_config($ui_type, $renderer_config, \%args);
 	
 	my $form_id = _identify($class, $args{prefix}, $ui_type);
@@ -458,7 +460,7 @@ sub render_as_form {
 		}
 		else {
 			$form_action = 'update';
-			(my $action_object_prefix = $form_id) =~ s/_form$//;
+			(my $action_object_prefix = $form_id) =~ s/_form$//x;
 			
 			unless (exists $args{queries} && $args{queries}->{$action_object_prefix . '_action'}) {
 				my $primary_key = $class->meta->primary_key_column_names->[0];
@@ -483,7 +485,7 @@ sub render_as_form {
 	my $column_order = $args{order} || _get_column_order($class, $relationships);
 
 	my $form_template;
-	if ($args{template} eq 1) {
+	if ($args{template} == 1) {
 		$form_template = $ui_type . '.tt';
 	}
 	else {
@@ -692,7 +694,7 @@ sub render_as_form {
 			}
 		}
 
-		delete $field_def->{value} if $field_def->{multiple} && $form->submitted && not $form->cgi_param($column) && not $form->cgi_param($form_id.'_'.$column);
+		delete $field_def->{value} if $field_def->{multiple} && $form->submitted && ! $form->cgi_param($column) && ! $form->cgi_param($form_id.'_'.$column);
 
 		$field_def->{label} ||= _label(_title($column, $renderer_config->{db}->{table_prefix}));
 
@@ -752,7 +754,6 @@ sub render_as_form {
 		if ($form->submitted ne $cancel) {
 			my $form_validate = $form->validate(%{$args{validate}});
 			if ($form_validate) {
-				no strict 'refs';
 				my $form_action_callback = '_'.$form_action.'_object';
 				my @files_to_remove;
 				@files_to_remove = $form->cgi_param($field_prefix . 'remove_files') if $form_config->{remove_files};
@@ -762,6 +763,7 @@ sub render_as_form {
 					if (ref $args{controllers}->{$form->submitted} eq 'HASH') {
 						if ($args{controllers}->{$form->submitted}->{$form_action}) {
 							unless (ref $args{controllers}->{$form->submitted}->{$form_action} eq 'CODE' && ! $args{controllers}->{$form->submitted}->{$form_action}->($self)) {
+							    no strict 'refs';
 								$self = $form_action_callback->($self, $class, $table, $field_order, $form, $form_id, $args{prefix}, $relationships, $relationship_object, \@files_to_remove);
 								$output->{self} = $self;
 							}
@@ -776,6 +778,7 @@ sub render_as_form {
 					}
 				}
 				elsif($form->submitted eq ucfirst ($form_action)) {
+				    no strict 'refs';
 					$self = $form_action_callback->($self, $class, $table, $field_order, $form, $form_id, $args{prefix}, $relationships, $relationship_object, \@files_to_remove);
 					$output->{self} = $self;
 				}
@@ -811,14 +814,14 @@ sub render_as_form {
 }
 
 sub render_as_table {
-	my ($self, %args) = (@_);
+	my ($self, %args) = @_;
 	_before($self, \%args) if exists $args{before};
 	my ($table, @controllers, $output, $query_hidden_fields, $q, $sort_by_column);
 	my $class = $self->object_class();
 	my $query = $args{query} || CGI->new;
 	my $url = $args{url} || $query->url(-absolute => 1);
 	my $renderer_config = _prepare($class, $args{renderer_config}, $args{prepared});
-	my ($ui_type) = (caller(0))[3] =~ /^.*_(\w+)$/;
+	my ($ui_type) = (caller(0))[3] =~ /^.*_(\w+)$/x;
 	my $table_config = _ui_config($ui_type, $renderer_config, \%args);
 
 	my $table_id = _identify($class, $args{prefix}, $ui_type);
@@ -860,8 +863,8 @@ sub render_as_table {
 	else {
 		my $sort_by = $query->param($param_list->{'sort_by'});
 		if ($sort_by) {
-			my $sort_by_column = $sort_by;
-			$sort_by_column =~ s/\sdesc$//;
+			$sort_by_column = $sort_by;
+			$sort_by_column =~ s/\sdesc$//x;
 			my $sort_by_column_definition_method = $sort_by_column . '_definition';
 			my $sort_by_column_definition;
 			$sort_by_column_definition = $class->$sort_by_column_definition_method if $class->can($sort_by_column_definition_method);
@@ -901,7 +904,7 @@ sub render_as_table {
 
 				my $like_search_values;
 				foreach my $raw_q (@raw_qs) {
-					$raw_q =~ s/^\s+|\s+$//g;
+					$raw_q =~ s/^\s+|\s+$//gx;
 					push @qs, $raw_q;
 					push @{$like_search_values}, '%' . $raw_q . '%';
 				}
@@ -919,9 +922,9 @@ sub render_as_table {
 				
 				foreach my $searchable_column (@{$searchable_columns}) {
 					my ($search_values, $search_class, $search_column, $search_method);
-					if ($searchable_column =~ /\./) {
+					if ($searchable_column =~ /\./x) {
 						my $search_table;
-						($search_table, $search_column) = split /\./, $searchable_column;
+						($search_table, $search_column) = split /\./x, $searchable_column;
 						$search_class = $table_to_class->{$search_table} || $class;
 					}
 					else {
@@ -962,7 +965,7 @@ sub render_as_table {
 				$args{queries}->{$param_list->{q}} = $q;
 
 				$table_title = $args{search_result_title} || $table_config->{search_result_title};
-				$table_title =~ s/\[%\s*q\s*%\]/$q/;
+				$table_title =~ s/\[%\s*q\s*%\]/$q/x;
 			}
 		}
 
@@ -1024,7 +1027,7 @@ sub render_as_table {
 			my $action = $query->param($param_list->{action});
 
 			if (exists $valid_form_actions->{$action} && $args{$action}) {
-				$args{$action} = {} if $args{$action} eq 1;
+				$args{$action} = {} if $args{$action} == 1;
 				$args{$action}->{output} = 1;
 				
 				$args{$action}->{no_head} = $args{no_head} if exists $args{no_head} && ! exists $args{$action}->{no_head};
@@ -1036,7 +1039,7 @@ sub render_as_table {
 					_inherit_form_option($option, $action, \%args);
 				}
 								
-				$args{$action}->{order} ||= Clone::clone($args{order}) if $args{order};			
+				$args{$action}->{order} ||= Clone::clone($args{order}) if $args{order};
 				$args{$action}->{template} ||= _template($args{template}, 'form', 1) if $args{template};
 				
 				@{$args{$action}->{queries}}{keys %{$args{queries}}} = values %{$args{queries}};
@@ -1129,20 +1132,20 @@ sub render_as_table {
 		$args{queries}->{$param_list->{ajax}} = 1 if $args{ajax} && $args{template};
 		
 		my $default_query_string = '';
-		$default_query_string = _create_query_string($args{queries}) if exists $args{queries};		
+		$default_query_string = _create_query_string($args{queries}) if exists $args{queries};
 		$query_string->{base} = $default_query_string;
 		$query_string->{sort_by} = $default_query_string;
 		$query_string->{page} = $default_query_string;
 
 		if($query->param($param_list->{sort_by})) {
-			$query_string->{page} .= $param_list->{sort_by}.'='.$query->param($param_list->{sort_by}).'&amp;' unless $query_string->{page} =~ /$param_list->{sort_by}=/;
+			$query_string->{page} .= $param_list->{sort_by}.'='.$query->param($param_list->{sort_by}).'&amp;' unless $query_string->{page} =~ /$param_list->{sort_by}=/x;
 			$query_string->{exclusive} = $param_list->{sort_by}.'='.$query->param($param_list->{sort_by}).'&amp;';
 		}
 
 		$query_string->{complete} = $query_string->{page};
 
 		if ($query->param($param_list->{page})) {
-			$query_string->{complete} .= $param_list->{page}.'='.$args{get}->{page}.'&amp;' unless $query_string->{complete} =~ /$param_list->{page}=/;
+			$query_string->{complete} .= $param_list->{page}.'='.$args{get}->{page}.'&amp;' unless $query_string->{complete} =~ /$param_list->{page}=/x;
 			$query_string->{exclusive} .= $param_list->{page}.'='.$args{get}->{page}.'&amp;';
 		}
 
@@ -1158,7 +1161,7 @@ sub render_as_table {
 			else {
 				$table->{create}->{value} = 'Create';
 			}
-			$table->{create}->{link} = qq($url?$query_string->{complete}$param_list->{action}=create);			
+			$table->{create}->{link} = qq($url?$query_string->{complete}$param_list->{action}=create);
 		}
 
 		$table->{total_columns} = scalar @{$column_order} + scalar @controllers;
@@ -1422,13 +1425,13 @@ sub render_as_table {
 }
 
 sub render_as_menu {
-	my ($self, %args) = (@_);
+	my ($self, %args) = @_;
 	_before($self, \%args) if exists $args{before};
 	
-	my($menu, $hide_menu_param, $current_param, $output, $content, $item_order, $items, $current, $template);
+	my($menu, $hide_menu_param, $current_param, $output, $item_order, $items, $current, $template);
 	my $class = $self->object_class();
 	my $renderer_config = _prepare($class, $args{renderer_config}, $args{prepared});
-	my ($ui_type) = (caller(0))[3] =~ /^.*_(\w+)$/;
+	my ($ui_type) = (caller(0))[3] =~ /^.*_(\w+)$/x;
 	my $menu_config = _ui_config($ui_type, $renderer_config, \%args);
 	
 	my $menu_id = _identify($class, $args{prefix}, $ui_type);
@@ -1566,7 +1569,7 @@ sub render_as_menu {
 }
 
 sub render_as_chart {
-	my ($self, %args) = (@_);
+	my ($self, %args) = @_;
 	_before($self, \%args) if exists $args{before};
 	my $class = $self->object_class();
 	my $renderer_config = _prepare($class, $args{renderer_config}, $args{prepared});
@@ -1575,7 +1578,7 @@ sub render_as_chart {
 	my $template_url = $args{template_url} || $renderer_config->{template}->{url};
 	my $template_path = $args{template_path} || $renderer_config->{template}->{path};
 	my $html_head = _html_head(\%args, $renderer_config);
-	my ($ui_type) = (caller(0))[3] =~ /^.*_(\w+)$/;
+	my ($ui_type) = (caller(0))[3] =~ /^.*_(\w+)$/x;
 	my $chart_id = _identify($class, $args{prefix}, $ui_type);
 
 	my $hide_chart_param;
@@ -1698,7 +1701,7 @@ sub render_as_chart {
 		my $chart_url = 'http://chart.apis.google.com/chart?' . _create_query_string($args{options});
 
 		if ($args{template}) {
-			if($args{template} eq 1) {
+			if($args{template} == 1) {
 				$template = $ui_type . '.tt';
 			}
 			else {
@@ -1741,7 +1744,7 @@ sub render_as_chart {
 }
 
 sub _render_template {
-	my %args = (@_);
+	my %args = @_;
 	if ($args{file} && $args{data} && $args{template_path}) {
 		my $options = $args{options};
 		$options->{INCLUDE_PATH} ||= $args{template_path};
@@ -1752,7 +1755,7 @@ sub _render_template {
 			return $output;
 		}
 		else {
-			$template->process($args{file},$args{data});
+			return $template->process($args{file},$args{data});
 		}
 	}
 }
@@ -1764,6 +1767,7 @@ sub _cascade {
 	foreach my $option (@{$cascade}) {
 		$options->{$option} = $args->{$option} if defined $args->{$option} && ! defined $options->{$option};
 	}
+	return;
 }
 
 sub _ui_config {
@@ -1810,14 +1814,14 @@ sub _pagination {
 		}
 	}
 
-	if ($get->{page} eq $last_page) {
+	if ($get->{page} == $last_page) {
 		$next_page = $last_page;
 	}
 	else {
 		$next_page = $get->{page} + 1;
 	}
 
-	if ($get->{page} eq 1) {
+	if ($get->{page} == 1) {
 		$previous_page = 1;
 	}
 	else {
@@ -1846,7 +1850,7 @@ sub _update_object {
 
 	foreach my $field (@{$field_order}) {
 		my $column = $field;
-		$column =~ s/$form_id\_// if $prefix;
+		$column =~ s/$form_id\_//x if $prefix;
 		my $field_value;
 		my @values = $form->field($field);
 		my $values_size = scalar @values;
@@ -1940,7 +1944,7 @@ sub _create_object {
 	foreach my $field (@{$field_order}) {
 		if(defined $form->cgi_param($field) && length($form->cgi_param($field))) {
 			my $column = $field;
-			$column =~ s/$form_id\_// if $prefix;
+			$column =~ s/$form_id\_//x if $prefix;
 			my @values = $form->field($field);
 			 # one to many or many to many
 			if (exists $relationships->{$column}) {
@@ -2037,11 +2041,12 @@ sub _get_relationships {
 }
 
 sub _remove_column_files {
-	my ($self, $columns) = @_;	
+	my ($self, $columns) = @_;
 	foreach my $column (@{$columns}) {
 		my $remove_file_method = $column . '_remove';
 		$self->$remove_file_method if $self->can($remove_file_method);
 	}
+	return;
 }
 
 sub delete_with_file {
@@ -2049,12 +2054,12 @@ sub delete_with_file {
 	return unless ref $self;
 	my $primary_key = $self->meta->primary_key_column_names->[0];
 	my $directory = File::Spec->catdir(_get_renderer_config($self)->{upload}->{path}, $self->stringify_class, $self->$primary_key);
-	rmtree($directory) || die ("Could not remove $directory") if -d $directory;
+	rmtree($directory) if -d $directory;
 	return $self->delete();
 }
 
 sub stringify_me {
-	my ($self, %args) = (@_);
+	my ($self, %args) = @_;
 	my $class = ref $self;
 	$class->prepare_renderer() unless $args{prepared} || $self->can('renderer_config');
 	my @values;
@@ -2080,7 +2085,7 @@ sub stringify_me {
 sub stringify_class {
 	my $self = shift;
 	my $package_name = lc ref $self || lc $self;
-	$package_name =~ s/::/_/g;
+	$package_name =~ s/::/_/gx;
 	return $package_name;
 }
 
@@ -2120,6 +2125,7 @@ sub _edit_date {
 	my ($self, $column) = @_;
 	return $self->$column unless ref $self->$column eq 'DateTime';
 	return $self->$column->dmy('/') if $self->$column;
+	return;
 }
 
 sub _edit_time {
@@ -2131,8 +2137,8 @@ sub _edit_time {
 sub _update_date {
 	my ($self, $column, $value) = @_;
 	return $self->$column(undef) unless $value;
-	my ($d, $m, $y) = split /\/|\-/, $value;
-	if ($d =~ /^\d{4}$/) { 
+	my ($d, $m, $y) = split /\/|\-/x, $value;
+	if ($d =~ /^\d{4}$/x) { 
 		my $temp_d = $d;
 		$d = $y;
 		$y = $temp_d;
@@ -2155,7 +2161,7 @@ sub _update_time {
 
 sub _update_file {
 	my ($self, $column, $value) = @_;
-	return unless $value && $value ne '';
+	return unless $value;
 	my $renderer_config = _get_renderer_config($self);
 	my $primary_key = $self->meta->primary_key_column_names->[0]; 
 	my $upload_path = File::Spec->catdir($renderer_config->{upload}->{path}, $self->stringify_class, $self->$primary_key, $column);
@@ -2202,10 +2208,10 @@ sub _update_timestamp {
 sub _update_datetime {
 	my ($self, $column, $value) = @_;
 	return $self->$column(undef) if $value eq '';
-	my ($date, $time) = split /\s+/, $value;
+	my ($date, $time) = split /\s+/x, $value;
 
-	my ($d, $m, $y) = split /\/|\-/, $date;
-	if ($d =~ /^\d{4}$/) { 
+	my ($d, $m, $y) = split /\/|\-/x, $date;
+	if ($d =~ /^\d{4}$/x) { 
 		my $temp_d = $d;
 		$d = $y;
 		$y = $temp_d;
@@ -2237,9 +2243,9 @@ sub _view_image {
 
 sub _view_media {
 	my ($self, $column) = @_;
-	return _view_image(@_) if $self->$column =~ /\.(gif|jpe?g|png|tiff?)$/;
-	return _view_video(@_) if $self->$column =~ /\.(ogv|ogg|mp4|m4v|mov)$/;
-	return _view_audio(@_);
+	return _view_image($self, $column) if $self->$column =~ /\.(gif|jpe?g|png|tiff?)$/x;
+	return _view_video($self, $column) if $self->$column =~ /\.(ogv|ogg|mp4|m4v|mov)$/x;
+	return _view_audio($self, $column);
 }
 
 sub _view_video {
@@ -2305,11 +2311,11 @@ sub _search_boolean {
 
 sub _search_date {
 	my ($self, $column, $value) = @_;
-	my ($date, $month_name, $year) = ($value =~ /(\d{1,2})?\s?([a-zA-Z]+)\s?(\d{4})?/);
+	my ($date, $month_name, $year) = ($value =~ /(\d{1,2})?\s?([a-zA-Z]+)\s?(\d{4})?/x);
 	if ($month_name) {
 		my $month = 1;
 		foreach my $abbr ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec') {
-			last if $month_name =~ /^$abbr/i;
+			last if $month_name =~ /^$abbr/ix;
 			$month++;
 		}
 		
@@ -2319,15 +2325,16 @@ sub _search_date {
 		return sprintf('-%02d-', $month) if $month;
 	}
 	else {
-		$value =~ s/\//-/g;
-		my ($d, $m, $y) = ($value =~ /^(0?[1-9]|[1-2][0-9]|3[0-1])\-(0?[1-9]|1[0-2])\-([0-9]{4})$/);
+		$value =~ s/\//-/gx;
+		my ($d, $m, $y) = ($value =~ /^(0?[1-9]|[1-2][0-9]|3[0-1])\-(0?[1-9]|1[0-2])\-([0-9]{4})$/x);
 		return sprintf('%4d-%02d-%02d', $y, $m, $d) if $d && $m && $y;
-		($m, $y) = ($value =~ /^(0?[1-9]|1[0-2])\-([0-9]{4})$/);
+		($m, $y) = ($value =~ /^(0?[1-9]|1[0-2])\-([0-9]{4})$/x);
 		return sprintf('%4d-%02d', $y, $m) if $m && $y;
-		($d, $m) = ($value =~ /^(0?[1-9]|[1-2][0-9]|3[0-1])\-(0?[1-9]|1[0-2])$/);
+		($d, $m) = ($value =~ /^(0?[1-9]|[1-2][0-9]|3[0-1])\-(0?[1-9]|1[0-2])$/x);
 		return sprintf('%02d-%02d', $m, $d) if $m && $d;
 		return $value;
 	}
+	return;
 }
 
 sub _search_percentage {
@@ -2340,7 +2347,7 @@ sub _remove_file {
 	return unless ref $self && $self->$column;
 	my $primary_key = $self->meta->primary_key_column_names->[0];
 	my $directory = File::Spec->catdir(_get_renderer_config($self)->{upload}->{path}, $self->stringify_class, $self->$primary_key, $column);
-	rmtree($directory) || die ("Could not remove $directory") if -d $directory;
+	rmtree($directory) if -d $directory;
 	return $self->$column(undef);
 }
 
@@ -2362,6 +2369,7 @@ sub _inherit_form_option {
 			last;
 		}
 	}
+	return;
 }
 
 sub _unique {
@@ -2376,7 +2384,7 @@ sub _unique {
 	}
 	return 1 unless $existing;
 
-	(my $prefix = $form->name) =~ s/_form$//;
+	(my $prefix = $form->name) =~ s/_form$//x;
 	return unless $form->field('action') eq 'edit' || $form->field($prefix.'_action') eq 'edit';
 	my $primary_key = $class->meta->primary_key_column_names->[0];
 	return 1 if $existing->$primary_key == $form->field('object') || $existing->$primary_key == $form->field($prefix.'_object');
@@ -2386,8 +2394,9 @@ sub _unique {
 sub _identify {
 	my ($class, $prefix, $ui_type) = @_;
 	return $prefix if defined $prefix;
-	($prefix = lc $class) =~ s/::/_/g;
-	$prefix .= '_'. $ui_type;
+	($prefix = lc $class) =~ s/::/_/gx;
+	$prefix .= '_' . $ui_type;
+	return $prefix;
 }
 
 sub _singularise_table {
@@ -2404,24 +2413,24 @@ sub _pluralise_table {
 
 sub _singularise {
 	my $word = shift;
-	$word =~ s/ies$/y/i;
-	return $word if ($word =~ s/ses$/s/);
-	return $word if($word =~ /[aeiouy]ss$/i);
-	$word =~ s/s$//i;
+	$word =~ s/ies$/y/ix;
+	return $word if ($word =~ s/ses$/s/x);
+	return $word if($word =~ /[aeiouy]ss$/ix);
+	$word =~ s/s$//ix;
 	return $word;
 }
 
 sub _title {
 	my ($table_name, $prefix) = @_;
 	return $table_name unless $prefix;
-	$table_name =~ s/^$prefix//;
+	$table_name =~ s/^$prefix//x;
 	return $table_name;
 }
 
 sub _label {
 	my $string = shift;
 	$string =~ s/_/ /g;
-	$string =~ s/\b(\w)/\u$1/g;
+	$string =~ s/\b(\w)/\u$1/gx;
 	return $string;
 }
 
@@ -2488,10 +2497,10 @@ sub _alias_table {
 sub _template {
 	my ($template, $ui_type, $default) = @_;
  	if (ref $template eq 'HASH') {
-		return $template->{$ui_type} if exists $template->{$ui_type} && $template->{$ui_type} ne 1;
+		return $template->{$ui_type} if exists $template->{$ui_type} && $template->{$ui_type} != 1;
 		return $ui_type . '.tt';
 	}
-	return $ui_type . '.tt' if $template eq 1 || $default;
+	return $ui_type . '.tt' if $template != 1 || $default;
 	return $template;
 }
 
