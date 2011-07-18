@@ -4,6 +4,7 @@ Revision history for Rose-DBx-Object-Renderer
         Suppress empty 'options' warnings from CGI::FormBuilder for foreign key and relationship columns in render_as_form().
         Cloned 'order' to detach it before passing to forms in render_as_table().
         Allowed render_as_table()'s build-in controller labels to be changeable via the 'controllers' option. 
+        Improved timestamp keyword search in render_as_table() - updated 'for_search' formatting method in timestamp column definition.
         Code refactoring.
 0.76    16/12/2010
         Added the 'load_js' and 'js' options to the default config.
