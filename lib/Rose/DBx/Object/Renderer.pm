@@ -45,7 +45,7 @@ sub _config {
 			'address' => {format => {for_view => sub {_view_address(@_);}}},
 			'date' => {class => 'date', validate => '/^(0?[1-9]|[1-2][0-9]|3[0-1])\/(0?[1-9]|1[0-2])\/[0-9]{4}|([0-9]{4}\-0?[1-9]|1[0-2])\-(0?[1-9]|[1-2][0-9]|3[0-1])$/', format => {for_edit => sub {_edit_date(@_);}, for_update => sub {_update_date(@_);}, for_search => sub {_search_date(@_);}, for_filter => sub {_search_date(@_);}, for_view => sub{_view_date(@_);}}},
 			'datetime' => {validate => '/^(0?[1-9]|[1-2][0-9]|3[0-1])\/(0?[1-9]|1[0-2])\/[0-9]{4}|([0-9]{4}\-0?[1-9]|1[0-2])\-(0?[1-9]|[1-2][0-9]|3[0-1])\s+[0-9]{1,2}:[0-9]{2}$/', format => {for_edit => sub{_edit_datetime(@_);}, for_view => sub{_view_datetime(@_);}, for_update => sub{_update_datetime(@_);}, for_search => sub {_search_date(@_);}, for_filter => sub {_search_date(@_);}}},
-			'timestamp' => {readonly => "readonly", disabled => 1, format => {for_view => sub {_view_timestamp(@_);}, for_create => sub {_create_timestamp(@_);}, for_edit => sub {_create_timestamp(@_);}, for_update => sub {_update_timestamp(@_);}, for_search => sub {_search_date(@_);}, for_filter => sub {_search_date(@_);}}},
+			'timestamp' => {readonly => "readonly", disabled => 1, format => {for_view => sub {_view_timestamp(@_);}, for_create => sub {_create_timestamp(@_);}, for_edit => sub {_create_timestamp(@_);}, for_update => sub {_update_timestamp(@_);}, for_search => sub {_search_timestamp(@_);}, for_filter => sub {_search_timestamp(@_);}}},
 			'description' => {sortopts => 'LABELNAME', type => 'textarea', cols => '55', rows => '10'},
 			'time' => {validate => '/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/', maxlength => 5, format => {for_update => sub {_update_time(@_)}, for_edit => sub{_edit_time(@_);}, for_view => sub{_view_time(@_);}}},
 			'length' => {validate => 'NUM', sortopts => 'NUM', format => {for_view => sub {my ($self, $column) = @_;my $value = $self->$column;return unless $value;return $value.' cm';}}},
@@ -2335,6 +2335,17 @@ sub _search_date {
 		return $value;
 	}
 	return;
+}
+
+sub _search_timestamp {
+	my ($self, $column, $value) = @_;
+	my ($date_or_time, $time) = ($value =~ /^([\d\/\-]+)\s?([\d\:]+)?$/);
+	if ($time) {
+		return _search_date($self, $column, $date_or_time) . ' ' . $time;
+	}
+	else {
+		return _search_date($self, $column, $date_or_time);
+	}
 }
 
 sub _search_percentage {
