@@ -25,7 +25,7 @@ use Scalar::Util ();
 use Clone qw(clone);
 
 our $VERSION = 0.77;
-# 253.64
+# 254.64
 
 sub _config {
 	my $config = {
@@ -247,7 +247,8 @@ sub _process_columns {
 						for_view => sub {
 							my ($self, $column) = @_;
 							return unless $self->$column;
-							return $self->$foreign_object_name->stringify_me;
+							return $self->$foreign_object_name->stringify_me if $self->can($foreign_object_name); # handle foreign key like columns
+							return $self->$column;
 						}
 					}
 				};
