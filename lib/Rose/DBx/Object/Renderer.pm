@@ -1455,8 +1455,7 @@ sub render_as_menu {
 	$query_string .= '&amp;' if $query_string;
 
 	$template = _template($args{template}, $ui_type) if $args{template};
-	
-	
+
 	$current = $query->param($current_param);
 	unless ($current) {
 		if ($args{current}) {
