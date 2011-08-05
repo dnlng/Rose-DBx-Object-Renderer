@@ -25,7 +25,7 @@ use Scalar::Util ();
 use Clone qw(clone);
 
 our $VERSION = 0.77;
-# 254.64
+# 255.64
 
 sub _config {
 	my $config = {
@@ -618,7 +618,12 @@ sub render_as_form {
 					if ($class->can($column . '_for_edit')) {
 						my $edit_method = $column . '_for_edit';
 						$current_value = $self->$edit_method;
-						$field_def->{value} = "$current_value";
+						if (ref $current_value eq 'ARRAY' || ref $current_value eq 'HASH') {
+							$field_def->{value} = $current_value;
+						}
+						else {
+							$field_def->{value} = "$current_value"; # make object stringifies
+						}
 					}
 					else {
 						if (ref $self->meta->{columns}->{$column} eq 'Rose::DB::Object::Metadata::Column::Set') {
