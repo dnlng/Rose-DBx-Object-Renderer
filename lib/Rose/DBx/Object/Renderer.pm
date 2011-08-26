@@ -25,7 +25,7 @@ use Scalar::Util ();
 use Clone qw(clone);
 
 our $VERSION = 0.77;
-# 256.64
+# 258.64
 
 sub _config {
 	my $config = {
@@ -65,7 +65,7 @@ sub _config {
 			'money' => {validate => '/^\-?\d{1,11}(\.\d{2})?$/', sortopts => 'NUM', format => {for_view => sub {my ($self, $column) = @_;return unless defined $self->$column;return sprintf ('$%.02f', $self->$column);}, for_edit => sub {my ($self, $column) = @_;return unless defined $self->$column;return sprintf ('%.02f', $self->$column);}}},
 			'percentage' => {validate => 'NUM', sortopts => 'NUM', comment => 'e.g.: 99.8', format => {for_view => sub {my ($self, $column, $value) = @_;$value = $self->$column;return unless $value;my $p = $value*100;return "$p%";}, for_edit => sub {my ($self, $column) = @_;my $value = $self->$column;return unless defined $value;return $value*100;}, for_update => sub {my ($self, $column, $value) = @_;return $self->$column($value/100) if $value;},  for_search => sub {_search_percentage(@_);}, for_filter => sub {_search_percentage(@_);}}},
 			'document' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+$/', format => {remove => sub {_remove_file(@_);}, path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_update => sub {_update_file(@_);}, for_view => sub {_view_file(@_)}}, type => 'file'},
-			'image' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+$/', format => {remove => sub {_remove_file(@_);}, path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_image(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
+			'image' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+\.(gif|jpg|jpeg|png|GIF|JPG|JPEG|PNG)$/', format => {remove => sub {_remove_file(@_);}, path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_image(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
 			'media' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+$/', format => {remove => sub {_remove_file(@_);}, path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_media(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
 			'video' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+$/', format => {remove => sub {_remove_file(@_);}, path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_video(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
 			'audio' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+$/', format => {remove => sub {_remove_file(@_);}, path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_audio(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
@@ -157,10 +157,9 @@ sub load {
 		}
 	}
 	
-	my $base_class_counter = 1;
-	$base_class_counter++ unless defined $args->{loader}->{db} || defined $args->{loader}->{db_class};
+	my $auto_base = $args->{loader}->{class_prefix} . '::DB::AutoBase1';
 	
-	return if (defined $config->{db}->{check_class} && "$config->{db}->{check_class}"->isa('Rose::DB::Object')) || (defined $args->{loader}->{class_prefix} && "$args->{loader}->{class_prefix}::DB::Object::AutoBase$base_class_counter"->isa('Rose::DB::Object')) || "Rose::DB::Object::LoaderGenerated::AutoBase$base_class_counter"->isa('Rose::DB::Object');
+	return if (defined $config->{db}->{check_class} && "$config->{db}->{check_class}"->isa('Rose::DB::Object')) || $auto_base->isa('Rose::DB');
 
 	unless (defined $args->{loader}->{db} || defined $args->{loader}->{db_class}) {
 		unless (defined $args->{loader}->{db_dsn}) {
@@ -185,11 +184,10 @@ sub load {
 	foreach my $class (@loaded) {
 		my $class_type;
 	
-		if (($class)->isa('Rose::DB::Object')) {
-			if (! (defined $args->{loader}->{db_class} || defined $args->{loader}->{base_class} || defined $args->{loader}->{base_classes}) && $config->{db}->{new_or_cached}) {
+		if (($class)->isa('Rose::DB::Object')) {			
+			if ($auto_base->isa('Rose::DB') && ! (defined $args->{loader}->{db_class} || defined $args->{loader}->{base_class} || defined $args->{loader}->{base_classes}) && $config->{db}->{new_or_cached}) {
 				my $package_init_db = $class . '::init_db';
 				*$package_init_db = sub {
-					my $auto_base = $args->{loader}->{class_prefix} . '::DB::AutoBase1';
 					$auto_base->new_or_cached;
 				};
 			}
