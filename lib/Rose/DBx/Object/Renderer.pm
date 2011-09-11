@@ -25,7 +25,7 @@ use Scalar::Util ();
 use Clone qw(clone);
 
 our $VERSION = 0.77;
-# 259.65
+# 260.65
 
 sub _config {
 	my $config = {
@@ -2512,7 +2512,7 @@ sub _alias_table {
 sub _template {
 	my ($template, $ui_type, $default) = @_;
  	if (ref $template eq 'HASH') {
-		return $template->{$ui_type} if exists $template->{$ui_type} && $template->{$ui_type} != 1;
+		return $template->{$ui_type} if exists $template->{$ui_type} && $template->{$ui_type} ne 1;
 		return $ui_type . '.tt';
 	}
 	return $ui_type . '.tt' if $template == 1 || $default;
