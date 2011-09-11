@@ -25,7 +25,7 @@ use Scalar::Util ();
 use Clone qw(clone);
 
 our $VERSION = 0.77;
-# 260.65
+# 261.65
 
 sub _config {
 	my $config = {
@@ -484,7 +484,7 @@ sub render_as_form {
 	my $column_order = $args{order} || _get_column_order($class, $relationships);
 
 	my $form_template;
-	if ($args{template} == 1) {
+	if ($args{template} eq 1) {
 		$form_template = $ui_type . '.tt';
 	}
 	else {
@@ -2515,7 +2515,7 @@ sub _template {
 		return $template->{$ui_type} if exists $template->{$ui_type} && $template->{$ui_type} ne 1;
 		return $ui_type . '.tt';
 	}
-	return $ui_type . '.tt' if $template == 1 || $default;
+	return $ui_type . '.tt' if $template eq 1 || $default;
 	return $template;
 }
 
