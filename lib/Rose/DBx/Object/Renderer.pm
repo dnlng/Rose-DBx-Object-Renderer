@@ -25,7 +25,7 @@ use Scalar::Util ();
 use Clone qw(clone);
 
 our $VERSION = 0.77;
-# 262.65
+# 263.65
 
 sub _config {
 	my $config = {
@@ -1000,17 +1000,19 @@ sub render_as_table {
 					if ($formatted_values) {
 
 						if ($table_config->{like_filter}) {
+
+							my $formatted_values_like = [map {'%' . $_ . '%'} @{$formatted_values}];
 							
 							if ($class && $class->meta->db->driver eq 'pg' && exists $class->meta->{columns}->{$column} && ! $class->meta->{columns}->{$column}->isa('Rose::DB::Object::Metadata::Column::Character')) {
 								my $filter_column_text = 'text(t1.' . $column . ') ' . $like_operator . ' ?';
-								push @{$filtered_columns}, \$filter_column_text => $formatted_values;
+								push @{$filtered_columns}, \$filter_column_text => $formatted_values_like;
 							}
 							elsif ($class && $class->meta->db->driver eq 'sqlite' && exists $class->meta->{columns}->{$column} && ! $class->meta->{columns}->{$column}->isa('Rose::DB::Object::Metadata::Column::Character')) {
 								my $filter_column_text = 'cast(t1.' . $column . ' AS TEXT) ' . $like_operator . ' ?';
-								push @{$filtered_columns}, \$filter_column_text => $formatted_values;
+								push @{$filtered_columns}, \$filter_column_text => $formatted_values_like;
 							}
 							else {
-								push @{$filtered_columns}, $column => {$like_operator => $formatted_values};
+								push @{$filtered_columns}, $column => {$like_operator => $formatted_values_like};
 							}
 
 						}
