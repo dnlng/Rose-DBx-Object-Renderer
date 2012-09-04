@@ -25,7 +25,7 @@ use Scalar::Util ();
 use Clone qw(clone);
 
 our $VERSION = 0.77;
-# 263.65
+# 264.65
 
 sub _config {
 	my $config = {
@@ -70,7 +70,7 @@ sub _config {
 			'video' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+$/', format => {remove => sub {_remove_file(@_);}, path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_video(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
 			'audio' => {validate => '/^[\w\s.!?@#$\(\)\'\_\-:%&*\/\\\\\[\]]+$/', format => {remove => sub {_remove_file(@_);}, path => sub {_get_file_path(@_);}, url => sub {_get_file_url(@_);}, for_view => sub {_view_audio(@_);}, for_update => sub {_update_file(@_);}}, type => 'file'},
 			'ipv4' => {validate => 'IPV4'},
-			'boolean' => {validate => '/^[0-1]$/', sortopts => 'LABELNAME', options => {1 => 'Yes', 0 => 'No'}, format => {for_view => sub {my ($self, $column) = @_;my $options = {1 => 'Yes', 0 => 'No'};return $options->{$self->$column};}, for_search => sub {_search_boolean(@_)}, for_filter => sub {_search_boolean(@_)}}},
+			'boolean' => {validate => '/^[0-1]$/', sortopts => 'LABELNAME', options => {1 => 'Yes', 0 => 'No'}, format => {for_create => sub {my ($self, $column) = @_;my $default = $self->meta->{columns}->{$column}->{default};return unless length($default);return {'true' => 1, 'false' => 0}->{$default};return $default;}, for_view => sub {my ($self, $column) = @_;my $options = {1 => 'Yes', 0 => 'No'};return $options->{$self->$column};}, for_search => sub {_search_boolean(@_)}, for_filter => sub {_search_boolean(@_)}}},
 		}
 	};
 
@@ -2420,10 +2420,21 @@ sub _unique {
 	}
 	return 1 unless $existing;
 
-	(my $prefix = $form->name) =~ s/_form$//x;
-	return unless $form->field('action') eq 'edit' || $form->field($prefix.'_action') eq 'edit';
+	my ($action, $object);
+
+	if (ref $form eq 'HASH') {
+		$action = $form->{button_action};
+		$object = $form->{object} if $form->{object};
+	}
+	else {
+		(my $prefix = $form->name) =~ s/_form$//x;
+		$action = $form->field('action') || $form->field($prefix . '_action');
+		$object = $form->field('object') || $form->field($prefix . '_object');
+	}
+
+	return unless $action eq 'edit' || $action eq 'update';
 	my $primary_key = $class->meta->primary_key_column_names->[0];
-	return 1 if $existing->$primary_key == $form->field('object') || $existing->$primary_key == $form->field($prefix.'_object');
+	return 1 if $existing->$primary_key == $object;
 	return;
 }
 
