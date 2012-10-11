@@ -1,5 +1,7 @@
 Revision history for Rose-DBx-Object-Renderer
 
+0.78    11/10/2012
+        Added checks to make sure foreign key columns can 'stringify_me'.
 0.77    04/09/2012
         Added the 'action' option to the default config for forms. 
         Added file extension restrictions in the default column definition for 'image'.
