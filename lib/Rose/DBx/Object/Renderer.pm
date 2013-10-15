@@ -6,8 +6,8 @@ use Exporter 'import';
 
 use base qw(Rose::Object);
 our @EXPORT = qw(config load);
-our @EXPORT_OK = qw(config load render_as_form render_as_table render_as_menu render_as_chart stringify_me stringify_class delete_with_file prepare_renderer);
-our %EXPORT_TAGS = (object => [qw(render_as_form stringify_me stringify_class delete_with_file prepare_renderer)], manager => [qw(render_as_table render_as_menu render_as_chart)]);
+our @EXPORT_OK = qw(config load render_as_form render_as_table render_as_menu render_as_chart stringify_me stringify_class delete_with_file clone_with_file prepare_renderer);
+our %EXPORT_TAGS = (object => [qw(render_as_form stringify_me stringify_class delete_with_file clone_with_file prepare_renderer)], manager => [qw(render_as_table render_as_menu render_as_chart)]);
 
 use Lingua::EN::Inflect ();
 use DateTime;
@@ -25,11 +25,11 @@ use Scalar::Util ();
 use Clone qw(clone);
 
 our $VERSION = 0.78;
-# 265.65
+# 267.66
 
 sub _config {
 	my $config = {
-		db => {name => undef, type => 'mysql', host => '127.0.0.1', port => undef, username => 'root', password => 'root', tables_are_singular => undef, table_prefix => undef, new_or_cached => 1, check_class => undef},
+		db => {name => undef, type => 'mysql', host => '127.0.0.1', port => undef, username => 'root', password => 'root', tables_are_singular => undef, table_prefix => undef, check_class => undef},
 		template => {path => 'templates', url => 'templates', options => undef},
 		upload => {path => 'uploads', url => 'uploads', keep_old_files => undef},
 		form => {download_message => 'View', remove_message => 'Remove', remove_files => undef, cancel => 'Cancel', delimiter => ',', action => undef},
@@ -139,6 +139,9 @@ sub load {
 	my ($self, $args) = @_;
 	$args = {} unless ref $args eq 'HASH';
 	my $config = $self->config;
+
+	return if defined $config->{db} && defined $config->{db}->{check_class} && "$config->{db}->{check_class}"->isa('Rose::DB::Object');
+
 	unless (exists $args->{loader} && defined $args->{loader}->{class_prefix}) {
 		if (defined $args->{loader}->{base_class}) {
 			$args->{loader}->{class_prefix} = $args->{loader}->{base_class};
@@ -156,10 +159,6 @@ sub load {
 			}
 		}
 	}
-	
-	my $auto_base = $args->{loader}->{class_prefix} . '::DB::AutoBase1';
-	
-	return if (defined $config->{db}->{check_class} && "$config->{db}->{check_class}"->isa('Rose::DB::Object')) || $auto_base->isa('Rose::DB');
 
 	unless (defined $args->{loader}->{db} || defined $args->{loader}->{db_class}) {
 		unless (defined $args->{loader}->{db_dsn}) {
@@ -185,13 +184,6 @@ sub load {
 		my $class_type;
 	
 		if (($class)->isa('Rose::DB::Object')) {			
-			if ($auto_base->isa('Rose::DB') && ! (defined $args->{loader}->{db_class} || defined $args->{loader}->{base_class} || defined $args->{loader}->{base_classes}) && $config->{db}->{new_or_cached}) {
-				my $package_init_db = $class . '::init_db';
-				*$package_init_db = sub {
-					$auto_base->new_or_cached;
-				};
-			}
-			
 			_process_columns($class, $config, $sorted_column_definition_keys);
 			my $package_renderer_config = $class . '::renderer_config';
 			*$package_renderer_config = sub {return $config};
@@ -2083,6 +2075,19 @@ sub delete_with_file {
 	return $self->delete();
 }
 
+sub clone_with_file {
+	my $self = shift;
+	my $clone = Rose::DB::Object::Helpers::clone_and_reset($self);
+	$clone->save(); # need the auto generated primary key for files;
+
+	my $primary_key = $self->meta->primary_key_column_names->[0];
+	my $renderer_config = _get_renderer_config($self);
+	my $directory = File::Spec->catdir($renderer_config->{upload}->{path}, $self->stringify_class, $self->$primary_key);
+
+	File::Copy::Recursive::dircopy($directory, File::Spec->catdir($renderer_config->{upload}->{path}, $self->stringify_class, $clone->$primary_key)) if -d $directory;
+	return $clone;
+}
+
 sub stringify_me {
 	my ($self, %args) = @_;
 	my $class = ref $self;
@@ -2681,10 +2686,11 @@ The C<db> option is for configuring database related settings, for instance:
       password => 'password',
       tables_are_singular => 1,  # defines table name conventions, defaulted to undef
       table_prefix => 'app_', # specificies the prefix used in your table names if any, defaulted to undef
-      new_or_cached => 0, # whether to use Rose::DB's new_or_cached() method, defaulted to 1
-      check_class => 'Company::DB', # skip loading classes if the given class is already loaded (for persistent environments)
+      check_class => 'Company::DB', # skip loading classes if the given class name is loaded (i.e. a Rose::DB::Object subclass)
     }
   });
+
+C<check_class> is B<mandatory> in persistent environments such as ModPerl or FastCGI. It is used to prevent Rose::DB::Object::Loader's C<make_classes()> from being executed in subsequent runs.
 
 =head3 C<template>
 
@@ -3526,6 +3532,12 @@ Apart from the formatting methods injected by C<load>, there are several lesser-
 This is a wrapper of the object's C<delete> method to remove any uploaded files associated:
 
   $object->delete_with_file();
+
+=head2 C<clone_with_file>
+
+Clone the object along with the associated files:
+
+  $object->clone_with_file();
 
 =head2 C<stringify_me>
 
